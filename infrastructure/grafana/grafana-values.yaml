@@ -1,0 +1,77 @@
+# Grafana Helm values
+# Standalone Grafana with pre-configured datasources
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+persistence:
+  enabled: true
+  size: 1Gi
+
+# Access via NodePort
+service:
+  type: NodePort
+  nodePort: 30300
+
+# Admin credentials
+adminUser: admin
+adminPassword: observability2026
+
+# Pre-configured datasources
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-kube-prometheus-prometheus.observability.svc.cluster.local:9090
+        access: proxy
+        isDefault: true
+        editable: true
+
+      - name: Loki
+        type: loki
+        url: http://loki.observability.svc.cluster.local:3100
+        access: proxy
+        editable: true
+        jsonData:
+          derivedFields:
+            - name: trace_id
+              matcherRegex: '"trace_id"\s*:\s*"(\w+)"'
+              url: "$${__value.raw}"
+              datasourceUid: tempo
+              matcherType: regex
+
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        url: http://tempo.observability.svc.cluster.local:3200
+        access: proxy
+        editable: true
+        jsonData:
+          tracesToLogsV2:
+            datasourceUid: loki
+            filterByTraceID: true
+          tracesToMetrics:
+            datasourceUid: prometheus
+          serviceMap:
+            datasourceUid: prometheus
+          nodeGraph:
+            enabled: true
+          lokiSearch:
+            datasourceUid: loki
+
+# Grafana configuration
+grafana.ini:
+  server:
+    root_url: "%(protocol)s://%(domain)s:%(http_port)s/"
+  auth.anonymous:
+    enabled: false
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false

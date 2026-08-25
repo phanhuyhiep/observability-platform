@@ -1,0 +1,49 @@
+# Promtail Helm values
+# DaemonSet to collect logs from all pods
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+config:
+  clients:
+    - url: http://loki.observability.svc.cluster.local:3100/loki/api/v1/push
+
+  snippets:
+    pipelineStages:
+      # Try JSON parse first (for structured logs)
+      - cri: {}
+      - json:
+          expressions:
+            level: level
+            trace_id: trace_id
+            span_id: span_id
+            service_name: service.name
+            error_type: error.type
+            message: message
+      # Add parsed fields as labels (only level for Loki cardinality)
+      - labels:
+          level:
+      # Fallback: if no level parsed, extract from log line
+      - match:
+          selector: '{level=""}'
+          stages:
+            - regex:
+                expression: '(?i)(level|lvl|severity)[=:]\s*"?(?P<level>\w+)'
+            - labels:
+                level:
+
+    # Extra relabel configs to add useful labels
+    extraRelabelConfigs:
+      - action: replace
+        source_labels:
+          - __meta_kubernetes_pod_label_app
+        target_label: app
+      - action: replace
+        source_labels:
+          - __meta_kubernetes_namespace
+        target_label: namespace
