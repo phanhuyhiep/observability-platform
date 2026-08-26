@@ -42,7 +42,9 @@ class EWMADetector:
         # Internal state: running EWMA and variance per entity/metric
         self._ewma: dict[str, float] = {}
         self._ewma_var: dict[str, float] = {}
+        self._obs_count: dict[str, int] = defaultdict(int)
         self._initialized: dict[str, bool] = defaultdict(lambda: False)
+        self._min_observations = 5  # Minimum data points before triggering
 
     def _key(self, entity_id: str, metric: str) -> str:
         return f"{entity_id}:{metric}"
@@ -50,6 +52,7 @@ class EWMADetector:
     def update(self, entity_id: str, metric: str, value: float) -> None:
         """Update internal EWMA state with a new value."""
         key = self._key(entity_id, metric)
+        self._obs_count[key] += 1
 
         if not self._initialized[key]:
             self._ewma[key] = value
@@ -78,6 +81,15 @@ class EWMADetector:
                 is_anomaly=False,
                 detector=self.name,
                 details={"reason": "insufficient_data"},
+            )
+
+        # Require minimum observations before triggering
+        obs = self._obs_count.get(key, 0)
+        if obs < self._min_observations:
+            return DetectorResult(
+                is_anomaly=False,
+                detector=self.name,
+                details={"reason": "warming_up", "observations": obs, "min_required": self._min_observations},
             )
 
         ewma = self._ewma[key]

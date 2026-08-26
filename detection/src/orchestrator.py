@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import datetime, timedelta
 from typing import Any
@@ -85,7 +86,7 @@ class DetectionOrchestrator:
 
         all_anomalies: list[AnomalyEvent] = []
 
-        # 2. Process each service
+        # 2. Process each service + auto-compute baselines
         for service in services:
             try:
                 anomalies = await self._process_service(service, namespace)
@@ -93,19 +94,69 @@ class DetectionOrchestrator:
             except Exception as e:
                 logger.error("Error processing service %s: %s", service, e, exc_info=True)
 
-        # 3. Store anomalies
+        # 3. Auto-compute baselines (runs periodically)
+        try:
+            await self._auto_compute_baselines(services, namespace)
+        except Exception as e:
+            logger.error("Error computing baselines: %s", e)
+
+        # 4. Store anomalies
         for anomaly in all_anomalies:
             if not self._is_duplicate(anomaly):
                 await self._store_anomaly(anomaly)
                 self._active_anomalies[self._anomaly_key(anomaly)] = anomaly
 
-        # 4. Resolve expired anomalies
+        # 5. Resolve expired anomalies
         await self._resolve_expired()
 
         logger.info(
             "Detection cycle complete: %d anomalies detected", len(all_anomalies)
         )
         return all_anomalies
+
+    async def _auto_compute_baselines(
+        self, services: list[str], namespace: str
+    ) -> None:
+        """Auto-compute baselines from recent data (1h window for quick start, 7d for production)."""
+        # Only compute every ~10 cycles (20 minutes)
+        self._baseline_counter = getattr(self, "_baseline_counter", 0) + 1
+        if self._baseline_counter % 10 != 1:
+            return
+
+        logger.info("Computing baselines for %d services", len(services))
+
+        metrics_queries = {
+            "cpu_usage_percent": (
+                '100 * sum(rate(container_cpu_usage_seconds_total'
+                '{{namespace="{ns}", pod=~"{svc}.*"}}[5m])) / '
+                'sum(kube_pod_container_resource_limits{{namespace="{ns}", '
+                'pod=~"{svc}.*", resource="cpu"}})'
+            ),
+            "memory_usage_percent": (
+                '100 * sum(container_memory_working_set_bytes'
+                '{{namespace="{ns}", pod=~"{svc}.*"}}) / '
+                'sum(kube_pod_container_resource_limits{{namespace="{ns}", '
+                'pod=~"{svc}.*", resource="memory"}})'
+            ),
+        }
+
+        for service in services:
+            for metric, query_tpl in metrics_queries.items():
+                try:
+                    query = query_tpl.format(ns=namespace, svc=service)
+                    # Use 1h window for baseline (quick start)
+                    values = await self.prom.get_metric_values(query, window_minutes=60)
+                    if values and len(values) >= 10:
+                        baseline = self.baseline_calculator.compute_from_values(
+                            values, "service", service, metric, namespace, "1h"
+                        )
+                        await self.baseline_storage.save_baseline(baseline)
+                        logger.info(
+                            "Baseline updated: %s/%s mean=%.2f std=%.2f (n=%d)",
+                            service, metric, baseline.mean, baseline.std, baseline.sample_count,
+                        )
+                except Exception as e:
+                    logger.debug("Baseline compute failed for %s/%s: %s", service, metric, e)
 
     async def _process_service(
         self, service: str, namespace: str
@@ -264,7 +315,7 @@ class DetectionOrchestrator:
                 baseline_window=feature_vector.features.baseline_window,
                 rule_id=result.details.get("rule_id"),
             ),
-            metadata={"labels": result.details},
+            metadata=result.details,
         )
 
     def _anomaly_key(self, anomaly: AnomalyEvent) -> str:
@@ -323,7 +374,7 @@ class DetectionOrchestrator:
                 anomaly.context.window,
                 anomaly.context.baseline_window,
                 anomaly.status,
-                "{}",  # metadata as JSON string
+                json.dumps(anomaly.metadata or {}, default=str),
             )
             logger.info(
                 "Stored anomaly: %s [%s] %s → %s",
