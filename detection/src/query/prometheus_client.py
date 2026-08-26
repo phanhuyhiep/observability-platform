@@ -22,7 +22,7 @@ class PrometheusClient:
         """Execute an instant PromQL query."""
         params: dict[str, Any] = {"query": query}
         if time:
-            params["time"] = time.isoformat()
+            params["time"] = str(time.timestamp())
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = await client.get(f"{self.base_url}/api/v1/query", params=params)
@@ -45,14 +45,19 @@ class PrometheusClient:
         """Execute a range PromQL query."""
         params = {
             "query": query,
-            "start": start.isoformat(),
-            "end": end.isoformat(),
+            "start": str(start.timestamp()),
+            "end": str(end.timestamp()),
             "step": step,
         }
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = await client.get(f"{self.base_url}/api/v1/query_range", params=params)
-            resp.raise_for_status()
+            if resp.status_code != 200:
+                logger.warning(
+                    "Prometheus range query returned %d for: %s",
+                    resp.status_code, query[:100],
+                )
+                return []
             data = resp.json()
 
         if data.get("status") != "success":
@@ -91,23 +96,33 @@ class PrometheusClient:
             return None
 
     async def discover_services(self, namespace: str = "default") -> list[str]:
-        """Discover active services by querying up metric."""
-        query = f'up{{namespace="{namespace}"}}'
-        results = await self.instant_query(query)
-
+        """Discover active services/deployments in the namespace."""
         services = set()
-        for r in results:
-            svc = r.get("metric", {}).get("service", "")
-            if svc:
-                services.add(svc)
 
-        # Fallback: discover from kube_deployment_status
-        if not services:
+        # Method 1: kube_deployment_status (most reliable for microservices)
+        try:
             query = f'kube_deployment_status_replicas_available{{namespace="{namespace}"}} > 0'
             results = await self.instant_query(query)
             for r in results:
                 deploy = r.get("metric", {}).get("deployment", "")
                 if deploy:
                     services.add(deploy)
+        except Exception as e:
+            logger.warning("Failed kube_deployment discovery: %s", e)
+
+        # Method 2: up metric (for services with service monitors)
+        if not services:
+            try:
+                query = f'up{{namespace="{namespace}"}}'
+                results = await self.instant_query(query)
+                for r in results:
+                    svc = r.get("metric", {}).get("service", "")
+                    job = r.get("metric", {}).get("job", "")
+                    if svc:
+                        services.add(svc)
+                    elif job and job != "kubernetes":
+                        services.add(job)
+            except Exception as e:
+                logger.warning("Failed up metric discovery: %s", e)
 
         return sorted(services)
