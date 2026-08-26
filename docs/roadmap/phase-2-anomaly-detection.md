@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Phase** | 2 / 5 |
-| **Trạng thái** | Chưa bắt đầu |
+| **Trạng thái** | Đang triển khai |
 | **Phụ thuộc** | Phase 1 hoàn thành (Metrics, Logs, Traces đã thu thập và chuẩn hóa) |
 | **Output chính** | Detection Service phát hiện anomaly và emit standardized Anomaly Events |
 
