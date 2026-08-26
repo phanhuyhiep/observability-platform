@@ -1,0 +1,94 @@
+# Default Detection Rules for Kubernetes Microservices
+# These rules are evaluated against feature vectors from the Feature Engine.
+
+rules:
+  - id: "rule-cpu-high"
+    name: "High CPU Usage"
+    description: "CPU usage exceeds 90% for a pod"
+    metric: "cpu_usage_percent"
+    entity_scope: "pod"
+    condition:
+      operator: ">"
+      threshold: 90
+    duration: "5m"
+    severity: "warning"
+    category: "resource"
+    enabled: true
+
+  - id: "rule-5xx-spike"
+    name: "HTTP 5xx Spike"
+    description: "HTTP 5xx error rate exceeds 5 per minute"
+    metric: "http_5xx_rate"
+    entity_scope: "service"
+    condition:
+      operator: ">"
+      threshold: 5
+    duration: "2m"
+    severity: "critical"
+    category: "error_rate"
+    enabled: true
+
+  - id: "rule-pod-restart"
+    name: "Pod Restart Detected"
+    description: "Pod has restarted at least once"
+    metric: "pod_restart_count"
+    entity_scope: "pod"
+    condition:
+      operator: "increased"
+      min_increase: 1
+    duration: "0m"
+    severity: "warning"
+    category: "stability"
+    enabled: true
+
+  - id: "rule-p95-latency"
+    name: "High P95 Latency"
+    description: "P95 latency exceeds 2000ms"
+    metric: "p95_latency"
+    entity_scope: "service"
+    condition:
+      operator: ">"
+      threshold: 2000
+    duration: "3m"
+    severity: "high"
+    category: "latency"
+    enabled: true
+
+  - id: "rule-memory-high"
+    name: "High Memory Usage"
+    description: "Memory usage exceeds 90% for a pod"
+    metric: "memory_usage_percent"
+    entity_scope: "pod"
+    condition:
+      operator: ">"
+      threshold: 90
+    duration: "5m"
+    severity: "warning"
+    category: "resource"
+    enabled: true
+
+  - id: "rule-oomkilled"
+    name: "OOMKilled Detected"
+    description: "Pod was killed due to out-of-memory"
+    metric: "oomkill_count"
+    entity_scope: "pod"
+    condition:
+      operator: "increased"
+      min_increase: 1
+    duration: "0m"
+    severity: "critical"
+    category: "stability"
+    enabled: true
+
+  - id: "rule-error-count-high"
+    name: "High Error Log Count"
+    description: "Error log count exceeds 50 in 5 minutes"
+    metric: "error_count"
+    entity_scope: "service"
+    condition:
+      operator: ">"
+      threshold: 50
+    duration: "5m"
+    severity: "warning"
+    category: "error_rate"
+    enabled: true

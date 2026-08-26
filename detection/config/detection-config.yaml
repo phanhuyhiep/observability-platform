@@ -1,0 +1,45 @@
+# detection-config.yaml
+detection:
+  interval: "2m"                    # Detection cycle interval
+  batch_size: 50                    # Entities processed per batch
+  namespace: "default"              # Target namespace for microservices-demo
+
+feature_engine:
+  default_window: "5m"              # Current value window
+  baseline_window: "7d"             # Baseline calculation window
+  baseline_update_interval: "1h"    # How often to recalculate baselines
+
+detectors:
+  rule:
+    enabled: true
+    rules_path: "./rules/"
+
+  zscore:
+    enabled: true
+    thresholds:
+      warning: 3.0
+      high: 5.0
+      critical: 10.0
+    min_data_points: 100            # Minimum baseline data points
+
+  ewma:
+    enabled: true
+    alpha: 0.1                      # Decay factor
+    thresholds:
+      warning: 2.0
+      high: 3.0
+      critical: 5.0
+
+deduplication:
+  window: "15m"                     # Suppress duplicate anomaly within this window
+  resolution_window: "10m"          # Mark anomaly resolved after normal for this duration
+
+storage:
+  database_url: "postgresql://detection:detection2026@localhost:5432/detection_db"
+  retention_days: 30
+
+prometheus:
+  url: "http://prometheus-kube-prometheus-prometheus.observability.svc.cluster.local:9090"
+
+loki:
+  url: "http://loki.observability.svc.cluster.local:3100"
