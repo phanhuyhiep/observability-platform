@@ -13,6 +13,9 @@ persistence:
   enabled: true
   size: 1Gi
 
+initChownData:
+  enabled: false
+
 # Access via NodePort
 service:
   type: NodePort
