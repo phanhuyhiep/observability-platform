@@ -11,6 +11,13 @@ import sys
 import urllib.request
 import urllib.error
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 
 def main():
     parser = argparse.ArgumentParser(description="Import Incident Dashboard to Grafana")

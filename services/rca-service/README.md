@@ -130,5 +130,36 @@ kubectl rollout status deployment/rca-service -n observability
 kubectl port-forward svc/rca-service 8082:8082 -n observability
 
 # In terminal 2: Run demo
-python scripts/demo_phase4.py
+python3 scripts/demo_phase4.py
 ```
+
+---
+
+## 📱 Telegram Alerts & Grafana Dashboard
+
+### 1. Configure Real Telegram Alerts
+1. Tạo Bot từ `@BotFather` để lấy `BOT_TOKEN` và chat với `@userinfobot` để lấy `CHAT_ID`. Nhớ bấm `/start` trên bot của bạn.
+2. Kiểm tra kết nối và gửi thử thẻ thông báo mẫu:
+```bash
+python3 scripts/test_telegram.py \
+  --token "<YOUR_BOT_TOKEN>" \
+  --chat-id "<YOUR_CHAT_ID>"
+```
+3. Cập nhật thông tin vào `k8s/notification-secret.yaml`:
+```bash
+kubectl apply -f k8s/notification-secret.yaml
+kubectl apply -f k8s/rca-deployment.yaml
+kubectl rollout restart deployment/rca-service -n observability
+```
+
+### 2. Import Dashboard Incident Intelligence lên Grafana
+1. Mở port-forward cho Grafana:
+```bash
+kubectl port-forward svc/grafana 30300:80 -n observability
+```
+2. Chạy script import tự động (tự tạo PostgreSQL datasource và nạp dashboard):
+```bash
+python3 ../../infrastructure/grafana/import_dashboard.py
+```
+3. Mở trình duyệt truy cập:
+👉 **`http://localhost:30300/d/incident-intelligence-rca`** (user: `admin` / pass: `observability2026`).
