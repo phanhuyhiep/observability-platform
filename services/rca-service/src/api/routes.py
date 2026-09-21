@@ -109,6 +109,12 @@ async def get_root_causes(incident_id: str):
     top_cause = ranked[0].entity_id if ranked else None
     conf = ranked[0].confidence if ranked else 0.0
 
+    if _notifier:
+        try:
+            await _notifier.dispatch(incident)
+        except Exception as e:
+            logger.warning("Failed to auto-dispatch notification for %s: %s", incident_id, e)
+
     return RCAResponse(
         incident_id=incident_id,
         root_causes=ranked,

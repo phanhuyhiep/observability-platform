@@ -1,5 +1,4 @@
-"""Telegram Bot message builder and dispatcher."""
-
+import html
 import logging
 
 import httpx
@@ -15,7 +14,7 @@ SEVERITY_EMOJI = {
 
 
 class TelegramNotifier:
-    """Formats and dispatches Telegram markdown incident alerts."""
+    """Formats and dispatches Telegram HTML incident alerts."""
 
     def build_message(
         self,
@@ -26,21 +25,24 @@ class TelegramNotifier:
         confidence: float = 0.0,
         impacted_services: list[str] | None = None,
         estimated_user_impact: str = "low",
+        grafana_url: str = "http://localhost:30300",
     ) -> str:
         emoji = SEVERITY_EMOJI.get(severity.lower(), "📢")
-        impacted_str = ", ".join(impacted_services[:5]) if impacted_services else "None"
+        impacted_str = ", ".join(impacted_services[:6]) if impacted_services else "None"
+        if impacted_services and len(impacted_services) > 6:
+            impacted_str += f" (+{len(impacted_services) - 6} more)"
 
         lines = [
-            f"{emoji} *INCIDENT ALERT: {incident_id}*",
-            f"*Severity:* `{severity.upper()}`",
-            f"*Summary:* {title}",
+            f"{emoji} <b>INCIDENT ALERT: {html.escape(incident_id)}</b>",
+            f"<b>Severity:</b> <code>{html.escape(severity.upper())}</code>",
+            f"<b>Summary:</b> {html.escape(title)}",
             "",
-            f"🎯 *Root Cause Candidate:* `{root_cause}`",
-            f"📊 *Confidence:* `{confidence * 100:.0f}%`",
-            f"🌐 *User Impact:* `{estimated_user_impact.upper()}`",
-            f"🔗 *Impacted Services:* `{impacted_str}`",
+            f"🎯 <b>Root Cause:</b> <code>{html.escape(root_cause)}</code>",
+            f"📊 <b>Confidence:</b> <code>{confidence * 100:.0f}%</code>",
+            f"🌐 <b>User Impact:</b> <code>{html.escape(estimated_user_impact.upper())}</code>",
+            f"🔗 <b>Impacted Services:</b> <code>{html.escape(impacted_str)}</code>",
             "",
-            "👉 _Please acknowledge or investigate in Grafana._",
+            f"👉 <a href='{grafana_url}'>Open Incident Dashboard in Grafana</a>",
         ]
         return "\n".join(lines)
 
@@ -52,13 +54,14 @@ class TelegramNotifier:
         payload = {
             "chat_id": chat_id,
             "text": message,
-            "parse_mode": "Markdown",
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
         }
         try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
+            async with httpx.AsyncClient(timeout=8.0) as client:
                 res = await client.post(url, json=payload)
                 if res.status_code == 200:
-                    logger.info("Successfully sent Telegram notification")
+                    logger.info("Successfully sent Telegram notification to chat %s", chat_id)
                     return True
                 logger.warning("Telegram API returned status %d: %s", res.status_code, res.text)
         except Exception as e:

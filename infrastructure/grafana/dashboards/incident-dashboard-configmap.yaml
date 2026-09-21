@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-incident-intelligence
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  incident-intelligence-dashboard.json: |-
