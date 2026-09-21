@@ -69,6 +69,20 @@ datasources:
           lokiSearch:
             datasourceUid: loki
 
+      - name: PostgreSQL
+        type: postgres
+        uid: postgres
+        url: detection-postgres.observability.svc.cluster.local:5432
+        user: detection
+        secureJsonData:
+          password: detection2026
+        jsonData:
+          database: detection_db
+          sslmode: disable
+          maxOpenConns: 5
+          maxIdleConns: 2
+          connMaxLifetime: 14400
+
 # Grafana configuration
 grafana.ini:
   server:

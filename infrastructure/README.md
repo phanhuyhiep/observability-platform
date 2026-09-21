@@ -74,8 +74,8 @@ kubectl top pods -n observability
 # Lấy Grafana URL (Minikube)
 minikube service grafana -n observability --url
 # Hoặc dùng port-forward:
-kubectl port-forward svc/grafana 3000:80 -n observability
-# → Mở http://localhost:3000
+kubectl port-forward svc/grafana 4000:80 -n observability
+# → Mở http://localhost:4000
 
 # Login: admin / observability2026
 ```
