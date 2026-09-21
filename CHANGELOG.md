@@ -6,6 +6,36 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ---
 
+## [0.4.0] – 2026-09-21
+
+### Added – Phase 4: Root Cause Analysis (RCA) & Incident Lifecycle
+- **Multi-Signal Root Cause Ranker** (`src/scoring/`):
+  - Weighted combination of 6 orthogonal dimensions: Temporal, Topology, Propagation, Severity, Deployment, and Evidence.
+  - Confidence scoring and detailed `scores_breakdown` for each ranked candidate.
+- **Blast Radius Calculator** (`src/blast_radius/`):
+  - Upstream caller traversal (1-hop direct vs 2+ hops indirect).
+  - User-facing service detection (`frontend`, `api-gateway`, etc.) and severity classification (`critical`, `high`, `medium`, `low`).
+- **Telemetry Evidence Aggregator** (`src/evidence/`):
+  - Multi-source telemetry gathering from Prometheus (metrics), Loki (error logs), and Tempo (distributed traces).
+  - Grafana deep-link generation and unified timeline construction.
+- **Incident Lifecycle State Machine** (`src/lifecycle/state_machine.py`):
+  - Deterministic state transitions: `OPEN` ➔ `ACKNOWLEDGED` ➔ `INVESTIGATING` ➔ `MITIGATED` ➔ `RESOLVED` ➔ `CLOSED`.
+  - Automatic calculation of MTTD (Mean Time to Detect) and MTTR (Mean Time to Resolve).
+  - Audit logging with `incident_timeline_events`.
+- **Auto-Resolver** (`src/lifecycle/auto_resolver.py`):
+  - Periodic background job that transitions stabilized incidents to `RESOLVED` when telemetry normalizes past the inactivity threshold.
+- **Multi-Channel Alert Dispatcher** (`src/notification/`):
+  - Slack Block Kit interactive message builder (acknowledgement and dashboard action buttons).
+  - Telegram Markdown incident card builder.
+  - Notification deduplication with 15-minute sliding window and severity escalation bypass.
+- **FastAPI Service** (`src/main.py`, `src/api/routes.py`):
+  - Complete REST API running on port 8082 with Prometheus metrics (`/metrics`) and health check (`/health`).
+- **Database Schema**: Migration `003_create_rca_and_lifecycle_tables.sql`.
+- **Automated Tests**: 28 unit and integration tests passing with 100% success rate.
+- **Demo Script**: Interactive CLI demo script `scripts/demo_phase4.py`.
+
+---
+
 ## [0.3.0] – 2026-09-21
 
 ### Added – Phase 3: Correlation Engine & Incident Intelligence

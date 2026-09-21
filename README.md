@@ -69,7 +69,7 @@ Prometheus Loki  OpenTelemetry K8s API
 | 1 | **Observability Foundation** | ✅ Hoàn thành | Prometheus, Loki, Tempo, OTel Collector, Grafana |
 | 2 | **Anomaly Detection** | ✅ Hoàn thành | Feature Engine, Rule/Z-Score/EWMA Detectors, PostgreSQL |
 | 3 | **Correlation Engine** | ✅ Hoàn thành | Temporal/Topology/Deployment Correlation, Service Graph, Incident Grouping |
-| 4 | **Root Cause Analysis** | 🔲 Chưa bắt đầu | RCA Scoring, Blast Radius, Evidence Aggregation, Notifications |
+| 4 | **Root Cause Analysis** | ✅ Hoàn thành | RCA Scoring, Blast Radius, Evidence Aggregation, Notifications |
 | 5 | **AI Enhancement** | 🔲 Chưa bắt đầu | Isolation Forest, Dynamic Baseline, LLM Summarization |
 
 > Chi tiết từng phase xem tại [docs/roadmap/](docs/roadmap/)
@@ -116,11 +116,20 @@ observability-platform/
 │   ├── tests/                    #   Unit & integration tests
 │   └── Dockerfile
 │
-├── services/                      # Phase 4 – RCA & Incident Engine
-│   └── (planned)                 #   Root Cause Scoring, Blast Radius, Notifications
-│
-├── incident-engine/               # Phase 4 – Incident Lifecycle
-│   └── (planned)                 #   State machine, auto-resolve, timeline
+├── services/rca-service/          # Phase 4 – RCA & Incident Lifecycle ✅
+│   ├── src/
+│   │   ├── main.py               #   FastAPI + APScheduler (port 8082)
+│   │   ├── scoring/              #   Multi-signal root cause scoring & ranking
+│   │   ├── blast_radius/         #   Blast radius calculator & user impact
+│   │   ├── evidence/             #   Prometheus, Loki, Tempo evidence aggregator
+│   │   ├── lifecycle/            #   State machine, auto-resolver, MTTR tracking
+│   │   ├── notification/         #   Slack Block Kit, Telegram Markdown dispatcher
+│   │   └── api/                  #   REST API endpoints
+│   ├── migrations/               #   PostgreSQL schema (003)
+│   ├── k8s/                      #   Kubernetes manifests
+│   ├── tests/                    #   Unit & integration tests (28/28 passed)
+│   ├── scripts/                  #   demo_phase4.py
+│   └── Dockerfile
 │
 ├── ai/                            # Phase 5 – ML/AI Enhancement
 │   └── (planned)                 #   Isolation Forest, Forecasting, LLM

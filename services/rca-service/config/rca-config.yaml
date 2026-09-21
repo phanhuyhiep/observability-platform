@@ -1,0 +1,37 @@
+# RCA Service & Incident Lifecycle Configuration
+rca:
+  evaluation_interval_seconds: 30
+  weights:
+    temporal: 0.25
+    topology: 0.25
+    propagation: 0.20
+    severity: 0.10
+    deployment: 0.10
+    evidence: 0.10
+
+blast_radius:
+  max_depth: 4
+  user_facing_services:
+    - "frontend"
+    - "api-gateway"
+    - "web"
+    - "ingress"
+
+evidence:
+  prometheus_url: "http://prometheus-kube-prometheus-prometheus.observability.svc.cluster.local:9090"
+  loki_url: "http://loki.observability.svc.cluster.local:3100"
+  tempo_url: "http://tempo.observability.svc.cluster.local:3200"
+  lookback_window_minutes: 15
+
+lifecycle:
+  auto_resolve_minutes: 15
+
+notification:
+  slack_webhook_url: ""
+  telegram_bot_token: ""
+  telegram_chat_id: ""
+  alertmanager_url: ""
+  dedup_window_minutes: 30
+
+storage:
+  database_url: "postgresql://detection:detection2026@detection-postgres:5432/detection_db"
