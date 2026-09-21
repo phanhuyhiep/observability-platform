@@ -1,0 +1,29 @@
+# Correlation Engine Configuration
+correlation:
+  evaluation_interval_seconds: 30
+
+temporal:
+  window_size_seconds: 300            # 5 minutes sliding window
+  max_window_extension_seconds: 900   # 15 minutes max window extension
+  min_anomalies_for_group: 2
+  inactivity_timeout_seconds: 600     # 10 minutes before closing active group
+
+topology:
+  graph_rebuild_interval_seconds: 900 # 15 minutes
+  max_hop_depth: 3                    # Max path depth for multi-hop correlation
+  edge_ttl_hours: 24                  # Inactive edge TTL
+  tempo_url: "http://tempo.observability.svc.cluster.local:3200"
+  query_range_minutes: 60
+
+deployment:
+  correlation_window_seconds: 1800    # 30 minutes after deploy
+
+incident:
+  auto_create: true
+  min_anomalies: 2                    # Minimum anomalies to form incident
+  critical_auto_create: true          # Auto-create if single critical anomaly
+  merge_window_seconds: 600           # 10 minutes merge window
+  suppression_window_seconds: 1800    # 30 minutes suppression window
+
+storage:
+  database_url: "postgresql://detection:detection2026@detection-postgres:5432/detection_db"
