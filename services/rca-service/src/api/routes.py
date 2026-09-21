@@ -256,6 +256,28 @@ async def add_incident_comment(incident_id: str, req: CommentRequest):
         description=req.comment,
     )
     _timeline_cache.setdefault(incident_id, []).append(event)
+
+    if _db_pool:
+        try:
+            async with _db_pool.acquire() as conn:
+                await conn.execute(
+                    """
+                    INSERT INTO incident_timeline_events (
+                        event_id, incident_id, timestamp, event_type, actor, title, description, metadata
+                    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    """,
+                    event.event_id,
+                    event.incident_id,
+                    event.timestamp,
+                    event.event_type,
+                    event.actor,
+                    event.title,
+                    event.description,
+                    json.dumps(event.metadata),
+                )
+        except Exception as e:
+            logger.error("Failed to persist comment to DB: %s", e)
+
     return {"status": "comment_added", "event": event}
 
 
@@ -267,6 +289,42 @@ async def _handle_transition(incident_id: str, target: str, actor: str, comment:
     try:
         updated_inc, event = _state_machine.transition(incident, target, actor=actor, comment=comment)
         _timeline_cache.setdefault(incident_id, []).append(event)
+
+        # Persist update and timeline event into DB
+        if _db_pool:
+            try:
+                async with _db_pool.acquire() as conn:
+                    await conn.execute(
+                        """
+                        UPDATE incidents
+                        SET status = $1, updated_at = $2, mttr_seconds = $3,
+                            resolved_at = $4, acknowledged_at = $5
+                        WHERE incident_id = $6
+                        """,
+                        updated_inc.status,
+                        updated_inc.updated_at,
+                        updated_inc.mttr_seconds,
+                        updated_inc.resolved_at,
+                        updated_inc.acknowledged_at,
+                        incident_id,
+                    )
+                    await conn.execute(
+                        """
+                        INSERT INTO incident_timeline_events (
+                            event_id, incident_id, timestamp, event_type, actor, title, description, metadata
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        """,
+                        event.event_id,
+                        event.incident_id,
+                        event.timestamp,
+                        event.event_type,
+                        event.actor,
+                        event.title,
+                        event.description,
+                        json.dumps(event.metadata),
+                    )
+            except Exception as e:
+                logger.error("Failed to persist incident transition to DB: %s", e)
 
         # Notify on major transitions (ACKNOWLEDGED or RESOLVED)
         if _notifier and target in ("ACKNOWLEDGED", "RESOLVED"):

@@ -20,36 +20,66 @@
   "panels": [
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 100,
       "title": "🚨 Key Incident & Performance Indicators",
       "type": "row"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 5 },
-              { "color": "red", "value": 15 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 15
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 3, "w": 4, "x": 0, "y": 1 },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
       "id": 1,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.0.0",
@@ -64,30 +94,55 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "orange", "value": 1 },
-              { "color": "red", "value": 3 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 3, "w": 5, "x": 4, "y": 1 },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 4,
+        "y": 1
+      },
       "id": 2,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.0.0",
@@ -102,28 +157,47 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "blue", "value": null }
+              {
+                "color": "blue",
+                "value": null
+              }
             ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 3, "w": 5, "x": 9, "y": 1 },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 9,
+        "y": 1
+      },
       "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.0.0",
@@ -138,31 +212,56 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 15 },
-              { "color": "red", "value": 30 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 15
+              },
+              {
+                "color": "red",
+                "value": 30
+              }
             ]
           },
           "unit": "m"
         },
         "overrides": []
       },
-      "gridPos": { "h": 3, "w": 5, "x": 14, "y": 1 },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 14,
+        "y": 1
+      },
       "id": 4,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.0.0",
@@ -177,31 +276,56 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "thresholds" },
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 60 },
-              { "color": "red", "value": 180 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 180
+              }
             ]
           },
           "unit": "s"
         },
         "overrides": []
       },
-      "gridPos": { "h": 3, "w": 5, "x": 19, "y": 1 },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 19,
+        "y": 1
+      },
       "id": 5,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "pluginVersion": "10.0.0",
@@ -217,38 +341,88 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 4 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
       "id": 101,
       "title": "📋 Live Incidents & Root Cause Analysis",
       "type": "row"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
             "align": "auto",
-            "cellOptions": { "type": "auto" },
+            "cellOptions": {
+              "type": "auto"
+            },
             "inspect": false
           },
           "mappings": [
             {
               "options": {
-                "OPEN": { "color": "red", "index": 0, "text": "OPEN" },
-                "ACKNOWLEDGED": { "color": "orange", "index": 1, "text": "ACKNOWLEDGED" },
-                "INVESTIGATING": { "color": "yellow", "index": 2, "text": "INVESTIGATING" },
-                "MITIGATED": { "color": "blue", "index": 3, "text": "MITIGATED" },
-                "RESOLVED": { "color": "green", "index": 4, "text": "RESOLVED" },
-                "CLOSED": { "color": "purple", "index": 5, "text": "CLOSED" }
+                "OPEN": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "OPEN"
+                },
+                "ACKNOWLEDGED": {
+                  "color": "orange",
+                  "index": 1,
+                  "text": "ACKNOWLEDGED"
+                },
+                "INVESTIGATING": {
+                  "color": "yellow",
+                  "index": 2,
+                  "text": "INVESTIGATING"
+                },
+                "MITIGATED": {
+                  "color": "blue",
+                  "index": 3,
+                  "text": "MITIGATED"
+                },
+                "RESOLVED": {
+                  "color": "green",
+                  "index": 4,
+                  "text": "RESOLVED"
+                },
+                "CLOSED": {
+                  "color": "purple",
+                  "index": 5,
+                  "text": "CLOSED"
+                }
               },
               "type": "value"
             },
             {
               "options": {
-                "critical": { "color": "red", "index": 0, "text": "CRITICAL" },
-                "high": { "color": "orange", "index": 1, "text": "HIGH" },
-                "warning": { "color": "yellow", "index": 2, "text": "WARNING" },
-                "low": { "color": "blue", "index": 3, "text": "LOW" }
+                "critical": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "CRITICAL"
+                },
+                "high": {
+                  "color": "orange",
+                  "index": 1,
+                  "text": "HIGH"
+                },
+                "warning": {
+                  "color": "yellow",
+                  "index": 2,
+                  "text": "WARNING"
+                },
+                "low": {
+                  "color": "blue",
+                  "index": 3,
+                  "text": "LOW"
+                }
               },
               "type": "value"
             }
@@ -256,38 +430,73 @@
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "Status" },
+            "matcher": {
+              "id": "byName",
+              "options": "Status"
+            },
             "properties": [
               {
                 "id": "custom.cellOptions",
-                "value": { "mode": "gradient", "type": "color-background" }
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
               }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "Severity" },
+            "matcher": {
+              "id": "byName",
+              "options": "Severity"
+            },
             "properties": [
               {
                 "id": "custom.cellOptions",
-                "value": { "mode": "gradient", "type": "color-background" }
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
               }
             ]
           },
           {
-            "matcher": { "id": "byName", "options": "MTTR (s)" },
+            "matcher": {
+              "id": "byName",
+              "options": "MTTR (s)"
+            },
             "properties": [
-              { "id": "unit", "value": "s" }
+              {
+                "id": "unit",
+                "value": "s"
+              }
             ]
           }
         ]
       },
-      "gridPos": { "h": 9, "w": 16, "x": 0, "y": 5 },
+      "gridPos": {
+        "h": 9,
+        "w": 16,
+        "x": 0,
+        "y": 5
+      },
       "id": 6,
       "options": {
         "cellHeight": "sm",
-        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{ "desc": true, "displayName": "Created At" }]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Created At"
+          }
+        ]
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -301,21 +510,47 @@
       "type": "table"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "mappings": []
         },
         "overrides": []
       },
-      "gridPos": { "h": 9, "w": 8, "x": 16, "y": 5 },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
       "id": 7,
       "options": {
-        "legend": { "displayMode": "table", "placement": "bottom", "values": ["value", "percent"] },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
         "pieType": "donut",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "tooltip": { "mode": "single", "sort": "none" }
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -330,16 +565,26 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
       "id": 102,
       "title": "🔍 Root Cause Frequency & Telemetry Anomaly Trends",
       "type": "row"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -348,23 +593,39 @@
             "axisPlacement": "auto",
             "fillOpacity": 80,
             "gradientMode": "none",
-            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
             "lineWidth": 1
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
       "id": 8,
       "options": {
         "barRadius": 0.2,
         "barWidth": 0.7,
         "groupWidth": 0.7,
-        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
         "orientation": "horizontal",
         "showValue": "always",
         "stacking": "none",
-        "tooltip": { "mode": "single", "sort": "none" },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
         "xTickLabelRotation": 0
       },
       "pluginVersion": "10.0.0",
@@ -379,10 +640,15 @@
       "type": "barchart"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -395,22 +661,45 @@
             "lineWidth": 1,
             "pointSize": 5,
             "spanNulls": false,
-            "stacking": { "group": "A", "mode": "normal" },
-            "thresholdsStyle": { "mode": "off" }
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
-            "steps": [{ "color": "green", "value": null }]
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
           }
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
       "id": 9,
       "options": {
-        "legend": { "calcs": [], "displayMode": "table", "placement": "bottom", "showLegend": true },
-        "tooltip": { "mode": "multi", "sort": "desc" }
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -425,41 +714,73 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
       "id": 103,
       "title": "📜 SRE Audit Timeline & Investigation History",
       "type": "row"
     },
     {
-      "datasource": { "type": "postgres", "uid": "postgres" },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
       "fieldConfig": {
         "defaults": {
           "custom": {
             "align": "auto",
-            "cellOptions": { "type": "auto" },
+            "cellOptions": {
+              "type": "auto"
+            },
             "inspect": false
           },
           "mappings": []
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "Actor" },
+            "matcher": {
+              "id": "byName",
+              "options": "Actor"
+            },
             "properties": [
               {
                 "id": "custom.cellOptions",
-                "value": { "type": "color-text" }
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           }
         ]
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
       "id": 10,
       "options": {
         "cellHeight": "sm",
-        "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false },
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
         "showHeader": true,
-        "sortBy": [{ "desc": true, "displayName": "Timestamp" }]
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Timestamp"
+          }
+        ]
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -476,17 +797,43 @@
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["observability", "incident-intelligence", "rca", "kubernetes"],
+  "tags": [
+    "observability",
+    "incident-intelligence",
+    "rca",
+    "kubernetes"
+  ],
   "time": {
     "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
-    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"]
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m"
+    ]
   },
   "timezone": "browser",
   "title": "AI Observability – Incident Intelligence & RCA",
   "uid": "incident-intelligence-rca",
   "version": 1,
-  "weekStart": ""
+  "weekStart": "",
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data Source",
+        "name": "datasource",
+        "options": [],
+        "query": "postgres",
+        "refresh": 1,
+        "type": "datasource"
+      }
+    ]
+  }
 }
