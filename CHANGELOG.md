@@ -6,6 +6,30 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 
 ---
 
+## [0.3.0] – 2026-09-21
+
+### Added – Phase 3: Correlation Engine & Incident Intelligence
+- **Temporal Correlator** (`temporal_correlator.py`): sliding time-window grouping (5m), dynamic extension (15m), and inactivity timeouts.
+- **Service Dependency Graph** (`graph_storage.py`, `graph_builder.py`, `graph_query.py`):
+  - Directed NetworkX in-memory representation with PostgreSQL persistence.
+  - Auto-discovery of caller ➔ callee relationships from OpenTelemetry traces via Tempo.
+  - Pre-seeded microservices-demo topology with multi-hop upstream/downstream traversals.
+- **Topology Correlator** (`topology_correlator.py`):
+  - Cascading failure path identification.
+  - Root entity candidate determination (`root_entity_candidate`) and topology confidence scoring.
+- **Deployment Correlator** (`deployment_correlator.py`):
+  - Proximity correlation with recent deployment/rollout events within a 30-minute window.
+  - Webhook endpoint for CI/CD and K8s rollout event ingestion.
+- **Incident Engine** (`incident_grouper.py`, `incident_merger.py`, `incident_suppression.py`):
+  - Automatic conversion of correlated groups to formal Incidents (`INC-XXXX`).
+  - Intelligent incident title generation based on root cause or deployment context.
+  - Incident deduplication, merge, and suppression to minimize alert fatigue.
+- **REST API** (`routes.py`): full endpoints for `/topology/services`, `/correlations`, `/incidents`, `/deployments`.
+- **Database Schema**: migration `002_create_correlation_tables.sql` for nodes, edges, correlation groups, and incidents.
+- **Automated Tests**: 17 unit and integration tests passing with 100% coverage.
+
+---
+
 ## [Unreleased]
 
 ### Added

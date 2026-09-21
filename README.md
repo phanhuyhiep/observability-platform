@@ -68,7 +68,7 @@ Prometheus Loki  OpenTelemetry K8s API
 |:---:|---|:---:|---|
 | 1 | **Observability Foundation** | ✅ Hoàn thành | Prometheus, Loki, Tempo, OTel Collector, Grafana |
 | 2 | **Anomaly Detection** | ✅ Hoàn thành | Feature Engine, Rule/Z-Score/EWMA Detectors, PostgreSQL |
-| 3 | **Correlation Engine** | 🔲 Chưa bắt đầu | Temporal/Topology Correlation, Service Graph, Incident Grouping |
+| 3 | **Correlation Engine** | ✅ Hoàn thành | Temporal/Topology/Deployment Correlation, Service Graph, Incident Grouping |
 | 4 | **Root Cause Analysis** | 🔲 Chưa bắt đầu | RCA Scoring, Blast Radius, Evidence Aggregation, Notifications |
 | 5 | **AI Enhancement** | 🔲 Chưa bắt đầu | Isolation Forest, Dynamic Baseline, LLM Summarization |
 
@@ -81,7 +81,7 @@ Prometheus Loki  OpenTelemetry K8s API
 ```
 observability-platform/
 │
-├── infrastructure/                # Phase 1 – Observability Stack
+├── infrastructure/                # Phase 1 – Observability Stack ✅
 │   ├── metrics/                   #   Prometheus + kube-prometheus-stack
 │   ├── logging/                   #   Loki + Promtail
 │   ├── tracing/                   #   Tempo + OTel Collector
@@ -102,8 +102,19 @@ observability-platform/
 │   ├── Dockerfile
 │   └── docker-compose.yaml
 │
-├── correlation/                   # Phase 3 – Correlation Engine
-│   └── (planned)                 #   Temporal, Topology, Deployment correlators
+├── correlation/                   # Phase 3 – Correlation Engine ✅
+│   ├── src/
+│   │   ├── main.py               #   FastAPI + APScheduler
+│   │   ├── orchestrator.py       #   Correlation pipeline coordinator
+│   │   ├── correlators/          #   Temporal, Topology, Deployment correlators
+│   │   ├── graph/                #   Service Dependency Graph (NetworkX + DB)
+│   │   ├── incident/             #   Incident Grouper, Merger, Suppression
+│   │   ├── deployment/           #   Deployment collector + webhook
+│   │   └── api/                  #   REST API endpoints
+│   ├── migrations/               #   PostgreSQL schema (002)
+│   ├── k8s/                      #   Kubernetes manifests
+│   ├── tests/                    #   Unit & integration tests
+│   └── Dockerfile
 │
 ├── services/                      # Phase 4 – RCA & Incident Engine
 │   └── (planned)                 #   Root Cause Scoring, Blast Radius, Notifications
