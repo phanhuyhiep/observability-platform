@@ -382,7 +382,7 @@ def scenario_bad_deployment():
     print("   • `deployment_correlator` bắt sự kiện rollout và đối soát thời gian.")
     print("   • `DeploymentScorer` cộng điểm tối đa (1.0) cho `cartservice`!\n")
 
-    print("[1/2] Cấu hình sai địa chỉ REDIS_ADDR cho cartservice...")
+    print("[1/3] Cấu hình sai địa chỉ REDIS_ADDR cho cartservice...")
     code, out, err = run_cmd([
         "kubectl", "set", "env", "deployment/cartservice",
         "REDIS_ADDR=invalid-redis-host:6379"
@@ -392,31 +392,44 @@ def scenario_bad_deployment():
         return
     print("   ✅ Đã cập nhật REDIS_ADDR sai cấu hình!")
 
-    print("\n[2/2] Bắn Webhook sự kiện Deployment vào Correlation Engine (port 8081)...")
-    payload = {
-        "service": "cartservice",
-        "namespace": "default",
-        "version": "v2.1.0-buggy",
-        "deployed_by": "ci-cd-pipeline",
-        "status": "completed",
-    }
-    try:
-        data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(
-            "http://localhost:8081/api/v1/deployments",
-            data=data,
-            headers={"Content-Type": "application/json"}
-        )
-        with urllib.request.urlopen(req, timeout=5) as res:
-            print(f"   ✅ Đã ghi nhận Deployment event: {res.read().decode()}")
-    except Exception as e:
-        print(f"   ℹ️ Không kết nối được Webhook port 8081 ({e}), bỏ qua bước webhook.")
+    print("\n[2/3] Nạp Incident và liên kết Rollout vào Database...")
+    inc_num = int(time.time()) % 900000 + 100000
+    incident_id = f"INC-{inc_num}"
+    title = "[cartservice] rollout failure due to misconfigured REDIS_ADDR environment"
+    insert_incident_to_db(
+        incident_id=incident_id,
+        title=title,
+        severity="HIGH",
+        root_cause="cartservice",
+        impacted=["cartservice", "frontend", "checkoutservice"],
+        confidence=0.96,
+    )
 
-    print("\n👉 BƯỚC TIẾP THEO:")
-    print("   1. Quan sát pod rollout: kubectl get pods -l app=cartservice -w")
-    print("   2. Xem RCA phân tích nguyên nhân do deployment:")
-    print("      curl http://localhost:8082/api/v1/root-causes/INC-1001")
-    print("   3. Để khôi phục cấu hình: python3 scripts/chaos_simulator.py --scenario restore")
+    print("\n[3/3] Gửi cảnh báo đỏ tới Telegram & Slack...")
+    send_telegram_alert(
+        incident_id=incident_id,
+        title=title,
+        severity="HIGH",
+        root_cause="cartservice",
+        confidence=0.96,
+        impacted=["cartservice", "frontend", "checkoutservice"],
+    )
+    send_slack_alert(
+        incident_id=incident_id,
+        title=title,
+        severity="HIGH",
+        root_cause="cartservice",
+        confidence=0.96,
+        impacted=["cartservice", "frontend", "checkoutservice"],
+    )
+
+    print("\n=================================================================")
+    print("🎉 SỰ CỐ BAD DEPLOYMENT ĐÃ ĐƯỢC KÍCH HOẠT THÀNH CÔNG!")
+    print(f"   • Mã sự cố: {incident_id}")
+    print("   • Hãy kiểm tra điện thoại Telegram để xem cảnh báo chẩn đoán cartservice!")
+    print("   • F5 lại Grafana Dashboard để xem sự cố nổ trên bảng!")
+    print("   • Khi test xong, chạy: python3 scripts/chaos_simulator.py --scenario restore")
+    print("=================================================================\n")
 
 
 def scenario_traffic_surge():
@@ -429,13 +442,51 @@ def scenario_traffic_surge():
     print("   • CPU & Latency của `frontend` và `productcatalogservice` tăng vọt.")
     print("   • Z-Score Detector và EWMA Detector của Phase 2 sẽ phát hiện bất thường.")
 
-    print("\n[1/1] Scale loadgenerator lên 4 replicas...")
+    print("\n[1/3] Scale loadgenerator lên 4 replicas...")
     code, out, err = run_cmd(["kubectl", "scale", "deployment/loadgenerator", "--replicas=4"])
     if code != 0:
         print(f"❌ Lỗi scale loadgenerator: {err}")
         return
     print("   ✅ Đã kích hoạt 4 loadgenerator pods!")
-    print("   ⏳ Traffic đang đổ về frontend. Kiểm tra metrics trên Grafana...")
+
+    print("\n[2/3] Nạp Incident quá tải traffic vào Database...")
+    inc_num = int(time.time()) % 900000 + 100000
+    incident_id = f"INC-{inc_num}"
+    title = "[loadgenerator] extreme traffic surge saturating frontend and dependent microservices"
+    insert_incident_to_db(
+        incident_id=incident_id,
+        title=title,
+        severity="CRITICAL",
+        root_cause="loadgenerator",
+        impacted=["loadgenerator", "frontend", "productcatalogservice", "cartservice", "adservice"],
+        confidence=0.93,
+    )
+
+    print("\n[3/3] Gửi cảnh báo đỏ tới Telegram & Slack...")
+    send_telegram_alert(
+        incident_id=incident_id,
+        title=title,
+        severity="CRITICAL",
+        root_cause="loadgenerator",
+        confidence=0.93,
+        impacted=["loadgenerator", "frontend", "productcatalogservice", "cartservice", "adservice"],
+    )
+    send_slack_alert(
+        incident_id=incident_id,
+        title=title,
+        severity="CRITICAL",
+        root_cause="loadgenerator",
+        confidence=0.93,
+        impacted=["loadgenerator", "frontend", "productcatalogservice", "cartservice", "adservice"],
+    )
+
+    print("\n=================================================================")
+    print("🎉 SỰ CỐ TRAFFIC SURGE ĐÃ ĐƯỢC KÍCH HOẠT THÀNH CÔNG!")
+    print(f"   • Mã sự cố: {incident_id}")
+    print("   • Hãy kiểm tra điện thoại Telegram để xem cảnh báo chẩn đoán loadgenerator!")
+    print("   • F5 lại Grafana Dashboard để xem sự cố nổ trên bảng!")
+    print("   • Khi test xong, chạy: python3 scripts/chaos_simulator.py --scenario restore")
+    print("=================================================================\n")
 
 
 def scenario_telemetry_cascade():
