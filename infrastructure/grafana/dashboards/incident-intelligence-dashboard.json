@@ -268,7 +268,7 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT COALESCE(ROUND(AVG(mttr_seconds)/60.0, 1), 0.0) as \"Avg MTTR (mins)\" FROM incidents WHERE mttr_seconds IS NOT NULL;",
+          "rawSql": "SELECT COALESCE(ROUND(AVG(mttr_seconds)::numeric / 60.0, 1), 0.0) as \"Avg MTTR (mins)\" FROM incidents;",
           "refId": "A"
         }
       ],
@@ -332,7 +332,7 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT COALESCE(ROUND(AVG(mttd_seconds), 1), 0.0) as \"Avg MTTD (seconds)\" FROM incidents WHERE mttd_seconds IS NOT NULL;",
+          "rawSql": "SELECT COALESCE(ROUND(AVG(mttd_seconds)::numeric, 1), 0.0) as \"Avg MTTD (seconds)\" FROM incidents;",
           "refId": "A"
         }
       ],
@@ -502,7 +502,7 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT incident_id as \"Incident ID\", status as \"Status\", severity as \"Severity\", title as \"Summary / Title\", COALESCE(metadata->>'root_candidate', 'Analyzing...') as \"Root Cause Candidate\", ROUND(mttr_seconds, 1) as \"MTTR (s)\", created_at as \"Created At\" FROM incidents ORDER BY created_at DESC LIMIT 25;",
+          "rawSql": "SELECT incident_id as \"Incident ID\", status as \"Status\", severity as \"Severity\", title as \"Summary / Title\", COALESCE(metadata->>'root_candidate', topology_context->>'root_entity_candidate', 'Analyzing...') as \"Root Cause Candidate\", ROUND(mttr_seconds::numeric, 1) as \"MTTR (s)\", created_at as \"Created At\" FROM incidents ORDER BY created_at DESC LIMIT 25;",
           "refId": "A"
         }
       ],
@@ -632,7 +632,7 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT COALESCE(metadata->>'root_candidate', entity_id) as entity, COUNT(*) as incidents FROM (SELECT metadata, unnest(impacted_entities) as entity_id FROM incidents) sub GROUP BY 1 ORDER BY incidents DESC LIMIT 8;",
+          "rawSql": "SELECT COALESCE(metadata->>'root_candidate', topology_context->>'root_entity_candidate', entity_id) as \"Entity\", count(*) as \"Incidents\" FROM (  SELECT metadata, topology_context, jsonb_array_elements_text(CASE WHEN jsonb_array_length(impacted_entities) > 0 THEN impacted_entities ELSE '[\"unknown\"]'::jsonb END) as entity_id   FROM incidents) sub GROUP BY 1 ORDER BY \"Incidents\" DESC LIMIT 8;",
           "refId": "A"
         }
       ],
@@ -786,7 +786,7 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT timestamp as \"Timestamp\", incident_id as \"Incident ID\", event_type as \"Event Type\", actor as \"Actor\", title as \"Action / Status\", description as \"Details / Comments\" FROM incident_timeline_events ORDER BY timestamp DESC LIMIT 50;",
+          "rawSql": "SELECT COALESCE(t.timestamp, i.created_at) as \"Timestamp\", COALESCE(t.incident_id, i.incident_id) as \"Incident ID\", COALESCE(t.event_type, 'incident_created') as \"Event Type\", COALESCE(t.actor, 'system') as \"Actor\", COALESCE(t.title, 'Status: ' || i.status) as \"Action / Status\", COALESCE(t.description, i.title) as \"Details / Comments\" FROM incidents i LEFT JOIN incident_timeline_events t ON i.incident_id = t.incident_id ORDER BY \"Timestamp\" DESC LIMIT 50;",
           "refId": "A"
         }
       ],
