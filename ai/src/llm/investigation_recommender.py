@@ -15,7 +15,7 @@ logger = logging.getLogger("ai.llm.recommender")
 RUNBOOK_CATALOG = {
     "redis": {
         "name": "Redis Crash & Cache Unavailability Runbook",
-        "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/redis-troubleshooting.md",
+        "url": "https://github.com/phanhuyhiep/observability-platform/blob/dev/docs/runbooks/redis-troubleshooting.md",
         "steps": [
             {
                 "action": "Xác nhận trạng thái Pod redis-cart",
@@ -41,7 +41,7 @@ RUNBOOK_CATALOG = {
     },
     "cartservice": {
         "name": "CartService Exception & Rollout Failure Runbook",
-        "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/cartservice-troubleshooting.md",
+        "url": "https://github.com/phanhuyhiep/observability-platform/blob/dev/docs/runbooks/cartservice-troubleshooting.md",
         "steps": [
             {
                 "action": "Kiểm tra biến môi trường REDIS_ADDR",
@@ -62,7 +62,7 @@ RUNBOOK_CATALOG = {
     },
     "loadgenerator": {
         "name": "Traffic Surge & Load Generator Runbook",
-        "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/traffic-surge.md",
+        "url": "https://github.com/phanhuyhiep/observability-platform/blob/dev/docs/runbooks/traffic-surge.md",
         "steps": [
             {
                 "action": "Kiểm tra số lượng replicas của loadgenerator",
@@ -78,7 +78,7 @@ RUNBOOK_CATALOG = {
     },
     "checkout": {
         "name": "Checkout & Payment Pipeline Runbook",
-        "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/checkout-troubleshooting.md",
+        "url": "https://github.com/phanhuyhiep/observability-platform/blob/dev/docs/runbooks/checkout-troubleshooting.md",
         "steps": [
             {
                 "action": "Kiểm tra log giao dịch của checkoutservice",
@@ -99,7 +99,7 @@ RUNBOOK_CATALOG = {
     },
     "frontend": {
         "name": "Frontend Ingress & HTTP 500 Runbook",
-        "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/frontend-troubleshooting.md",
+        "url": "https://github.com/phanhuyhiep/observability-platform/blob/dev/docs/runbooks/frontend-troubleshooting.md",
         "steps": [
             {
                 "action": "Xem log lỗi HTTP 500 của frontend",
@@ -120,7 +120,7 @@ RUNBOOK_CATALOG = {
     },
     "default": {
         "name": "Microservices General Incident Runbook",
-        "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/general-incident.md",
+        "url": "https://github.com/phanhuyhiep/observability-platform/blob/dev/docs/runbooks/general-incident.md",
         "steps": [
             {
                 "action": "Kiểm tra tài nguyên CPU/RAM trên Kubernetes Node",
