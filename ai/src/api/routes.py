@@ -91,6 +91,7 @@ async def health():
 # ---------------------------------------------------------------------------
 
 @router.post("/api/v1/ml/detect", response_model=AnomalyScoreResult, tags=["ML Detection"])
+@router.post("/api/v1/anomalies/detect", response_model=AnomalyScoreResult, tags=["ML Detection"])
 async def detect_anomalies(payload: dict[str, Any]):
     """Evaluate multi-metric telemetry vector for multivariate anomalies using Isolation Forest."""
     if not inference_engine:
@@ -128,6 +129,7 @@ async def train_model(request: TrainModelRequest):
 
 
 @router.get("/api/v1/ml/models", tags=["ML Detection"])
+@router.get("/api/v1/models", tags=["ML Detection"])
 async def list_models():
     """List trained anomaly detection models."""
     if not training_pipeline:
