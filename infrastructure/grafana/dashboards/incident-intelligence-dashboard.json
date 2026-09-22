@@ -14,9 +14,44 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
-  "links": [],
-  "liveNow": true,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "bolt",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "🤖 AI Copilot Models API",
+      "tooltip": "Inspect ML Isolation Forest models & status",
+      "type": "link",
+      "url": "http://172.16.20.26:30083/api/v1/ml/models"
+    },
+    {
+      "asDropdown": false,
+      "icon": "doc",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "🔍 RCA Service API",
+      "tooltip": "RCA Root Cause Engine Health & Info",
+      "type": "link",
+      "url": "http://172.16.20.26:30082/health"
+    },
+    {
+      "asDropdown": false,
+      "icon": "search",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": true,
+      "title": "⚡ Tempo Explore",
+      "tooltip": "Explore Distributed Tracing Spans",
+      "type": "link",
+      "url": "/explore?left=%7B%22datasource%22:%22tempo%22%7D"
+    }
+  ],
   "panels": [
     {
       "collapsed": false,
@@ -1382,6 +1417,157 @@
       ],
       "title": "Pod Network Receive Bandwidth (Bytes/s)",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "id": 105,
+      "title": "🤖 AI Incident Copilot & Investigation Assistant (Phase 5)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Incident ID"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "🤖 Live AI Summary (${__value.raw})",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/summary"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "💡 Live AI Recommendations (${__value.raw})",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/recommendations"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 49
+      },
+      "id": 18,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Generated At"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT incident_id as \"Incident ID\", provider as \"AI Provider\", model_name as \"Model\", summary_text as \"Executive RCA Narrative\", created_at as \"Generated At\" FROM incident_ai_summaries ORDER BY created_at DESC LIMIT 10;",
+          "refId": "A"
+        }
+      ],
+      "title": "🤖 AI RCA Executive Summaries",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Runbook URL"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "📖 Open Official Runbook",
+                    "url": "${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 49
+      },
+      "id": 19,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Generated At"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT incident_id as \"Incident ID\", step_order as \"Step\", action_title as \"Action Title\", command as \"Shell / kubectl Command\", runbook_url as \"Runbook URL\", created_at as \"Generated At\" FROM ai_investigation_recommendations ORDER BY created_at DESC, step_order ASC LIMIT 15;",
+          "refId": "A"
+        }
+      ],
+      "title": "💡 AI Investigation Steps & Recommended Runbooks",
+      "type": "table"
     }
   ],
   "refresh": "10s",

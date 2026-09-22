@@ -25,12 +25,16 @@ class TelegramNotifier:
         confidence: float = 0.0,
         impacted_services: list[str] | None = None,
         estimated_user_impact: str = "low",
-        grafana_url: str = "http://localhost:30300",
+        grafana_url: str = "http://172.16.20.26:4000",
+        ai_service_url: str = "http://172.16.20.26:30083",
     ) -> str:
         emoji = SEVERITY_EMOJI.get(severity.lower(), "📢")
         impacted_str = ", ".join(impacted_services[:6]) if impacted_services else "None"
         if impacted_services and len(impacted_services) > 6:
             impacted_str += f" (+{len(impacted_services) - 6} more)"
+
+        ai_summary_url = f"{ai_service_url}/api/v1/incidents/{incident_id}/summary"
+        ai_recs_url = f"{ai_service_url}/api/v1/incidents/{incident_id}/recommendations"
 
         lines = [
             f"{emoji} <b>INCIDENT ALERT: {html.escape(incident_id)}</b>",
@@ -42,7 +46,12 @@ class TelegramNotifier:
             f"🌐 <b>User Impact:</b> <code>{html.escape(estimated_user_impact.upper())}</code>",
             f"🔗 <b>Impacted Services:</b> <code>{html.escape(impacted_str)}</code>",
             "",
-            f"👉 <a href='{grafana_url}'>Open Incident Dashboard in Grafana</a>",
+            f"🤖 <b>AI Incident Copilot Insights:</b>",
+            f"• <b>Quick Action:</b> <code>kubectl get pods -l app={html.escape(root_cause)}</code>",
+            f"• <a href='{ai_summary_url}'>📄 Xem AI RCA Executive Summary</a>",
+            f"• <a href='{ai_recs_url}'>💡 Xem AI Đề xuất Điều tra & Runbook</a>",
+            "",
+            f"👉 <a href='{grafana_url}'>📊 Open Incident Dashboard in Grafana</a>",
         ]
         return "\n".join(lines)
 

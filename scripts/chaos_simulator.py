@@ -96,6 +96,8 @@ def send_telegram_alert(
     emoji_map = {"critical": "🚨", "high": "⚠️", "warning": "⚡"}
     emoji = emoji_map.get(severity.lower(), "📢")
     impacted_str = ", ".join(impacted) if impacted else "None"
+    ai_summary_url = f"http://172.16.20.26:30083/api/v1/incidents/{incident_id}/summary"
+    ai_recs_url = f"http://172.16.20.26:30083/api/v1/incidents/{incident_id}/recommendations"
 
     msg = (
         f"{emoji} <b>INCIDENT ALERT: {html.escape(incident_id)}</b>\n"
@@ -105,7 +107,11 @@ def send_telegram_alert(
         f"📊 <b>Confidence:</b> <code>{confidence * 100:.0f}%</code>\n"
         f"🌐 <b>User Impact:</b> <code>CRITICAL (Cart/Checkout Broken)</code>\n"
         f"🔗 <b>Impacted Services:</b> <code>{html.escape(impacted_str)}</code>\n\n"
-        f"👉 <a href='{grafana_url}'>Open Incident Dashboard in Grafana</a>"
+        f"🤖 <b>AI Incident Copilot Insights:</b>\n"
+        f"• <b>Quick Action:</b> <code>kubectl get pods -l app={html.escape(root_cause)}</code>\n"
+        f"• <a href='{ai_summary_url}'>📄 Xem AI RCA Executive Summary</a>\n"
+        f"• <a href='{ai_recs_url}'>💡 Xem AI Đề xuất Điều tra & Runbook</a>\n\n"
+        f"👉 <a href='{grafana_url}'>📊 Open Incident Dashboard in Grafana</a>"
     )
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -215,8 +221,18 @@ def send_slack_alert(
                     },
                     {
                         "type": "button",
-                        "text": {"type": "plain_text", "text": "Investigate Traces (Tempo)"},
-                        "url": f"{grafana_url}/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D%7D",
+                        "text": {"type": "plain_text", "text": "🤖 AI RCA Summary"},
+                        "url": f"http://172.16.20.26:30083/api/v1/incidents/{incident_id}/summary",
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "💡 AI Runbook"},
+                        "url": f"http://172.16.20.26:30083/api/v1/incidents/{incident_id}/recommendations",
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "📊 Open Grafana"},
+                        "url": grafana_url,
                     },
                 ],
             },

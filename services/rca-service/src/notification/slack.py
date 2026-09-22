@@ -27,7 +27,8 @@ class SlackNotifier:
         confidence: float = 0.0,
         impacted_services: list[str] | None = None,
         estimated_user_impact: str = "low",
-        grafana_url: str = "http://localhost:4000",
+        grafana_url: str = "http://172.16.20.26:4000",
+        ai_service_url: str = "http://172.16.20.26:30083",
     ) -> dict[str, Any]:
         emoji = SEVERITY_EMOJI.get(severity.lower(), "⚪")
         impacted_str = ", ".join(impacted_services[:5]) if impacted_services else "None"
@@ -82,9 +83,19 @@ class SlackNotifier:
                     },
                     {
                         "type": "button",
+                        "text": {"type": "plain_text", "text": "🤖 AI RCA Summary"},
+                        "url": f"{ai_service_url}/api/v1/incidents/{incident_id}/summary",
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "💡 AI Runbook"},
+                        "url": f"{ai_service_url}/api/v1/incidents/{incident_id}/recommendations",
+                    },
+                    {
+                        "type": "button",
                         "text": {
                             "type": "plain_text",
-                            "text": "Investigate in Grafana",
+                            "text": "📊 Open Grafana",
                         },
                         "url": grafana_url,
                     },
