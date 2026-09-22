@@ -73,6 +73,66 @@ def build_default_topology_graph() -> nx.DiGraph:
     return g
 
 
+notified_incidents: set[str] = set()
+
+
+async def incident_watcher_job(ranker: RootCauseRanker, blast_calc: BlastRadiusCalculator, notifier: NotificationCoordinator):
+    """Periodically checks for new OPEN incidents in DB, computes RCA, and auto-dispatches alerts."""
+    if not db_pool:
+        return
+    try:
+        async with db_pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT * FROM incidents
+                WHERE status = 'OPEN' AND created_at > now() - interval '30 minutes'
+                ORDER BY created_at DESC LIMIT 10
+                """
+            )
+            for r in rows:
+                inc_id = r["incident_id"]
+                if inc_id not in notified_incidents:
+                    imp = r["impacted_entities"]
+                    if isinstance(imp, str):
+                        try:
+                            imp = json.loads(imp)
+                        except Exception:
+                            imp = []
+
+                    inc = IncidentDetail(
+                        incident_id=inc_id,
+                        title=r["title"],
+                        severity=r["severity"],
+                        status=r["status"],
+                        created_at=r["created_at"],
+                        updated_at=r["updated_at"],
+                        impacted_entities=imp or [],
+                    )
+
+                    # Compute RCA
+                    ranked = ranker.rank(
+                        entities=inc.impacted_entities,
+                        entity_timestamps={e: inc.created_at for e in inc.impacted_entities},
+                        entity_anomalies={e: [{"severity": inc.severity}] for e in inc.impacted_entities},
+                        graph=graph,
+                        incident_time=inc.created_at,
+                    )
+                    inc.root_causes = ranked
+                    top_entity = ranked[0].entity_id if ranked else (inc.impacted_entities[0] if inc.impacted_entities else "unknown")
+                    inc.blast_radius = blast_calc.calculate(top_entity, graph)
+
+                    incidents_cache[inc_id] = inc
+
+                    # Dispatch notification
+                    logger.info("Auto-dispatching alert for incident %s (root cause: %s)", inc_id, top_entity)
+                    res = await notifier.dispatch(inc)
+                    if res.get("status") == "dispatched":
+                        notified_incidents.add(inc_id)
+                        logger.info("Dispatched notification for %s via %s", inc_id, res.get("channels"))
+    except Exception as e:
+        logger.error("Error in incident_watcher_job: %s", e)
+
+
 async def auto_resolve_job(auto_resolver: AutoResolver):
     """Periodic job to auto-resolve stabilized incidents."""
     logger.debug("Checking incidents for auto-resolution...")
@@ -170,8 +230,14 @@ async def lifespan(app: FastAPI):
         graph=graph,
     )
 
-    # 4. Setup scheduler for auto-resolver
+    # 4. Setup scheduler for incident watcher and auto-resolver
     scheduler = AsyncIOScheduler()
+    scheduler.add_job(
+        lambda: incident_watcher_job(ranker, blast_calc, notifier),
+        "interval",
+        seconds=10,
+        id="rca_incident_watcher",
+    )
     scheduler.add_job(
         lambda: auto_resolve_job(auto_resolver),
         "interval",

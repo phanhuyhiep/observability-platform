@@ -59,20 +59,28 @@ def scenario_redis_down():
         return
     print("   ✅ Đã tắt redis-cart thành công!")
 
-    print("\n[2/2] Đang gửi traffic test tới frontend để kích hoạt chuỗi lỗi...")
-    # Thử gửi request vào frontend nếu có thể
-    print("   ⏳ Đang chờ 5 giây để Prometheus & Loki thu thập log lỗi từ cartservice...")
-    time.sleep(5)
+    print("\n[2/2] Đang tạo traffic gọi vào Cart Service để ép sinh lỗi 500 & Exception...")
+    # Exec curl vào frontend để gọi /cart
+    for i in range(5):
+        run_cmd(["kubectl", "exec", "deployment/frontend", "--", "curl", "-s", "http://localhost:8080/cart"])
+        time.sleep(1)
+    print("   ✅ Đã bắn 5 requests vào cart service (cartservice đã văng exception vì mất Redis)!")
 
     print("\n📊 Kiểm tra trạng thái pods hiện tại:")
     _, out, _ = run_cmd(["kubectl", "get", "pods", "-l", "app in (redis-cart,cartservice,frontend)"])
     print(out)
 
-    print("\n👉 BƯỚC TIẾP THEO:")
-    print("   1. Quan sát Dashboard Grafana tại: http://localhost:30300 (hoặc port 4000)")
-    print("   2. Kiểm tra log lỗi: kubectl logs -l app=cartservice --tail=20")
-    print("   3. Chạy demo RCA: python3 services/rca-service/scripts/demo_phase4.py")
-    print("   4. Khi test xong, hãy chạy: python3 scripts/chaos_simulator.py --scenario restore")
+    print("\n⏱️ LƯU Ý VỀ THỜI GIAN PHÁT HIỆN (DETECTION PIPELINE):")
+    print("   • Prometheus cào metrics mỗi 15s - 30s.")
+    print("   • Detection Service chạy đánh giá Z-Score mỗi 30s.")
+    print("   • Correlation Engine gom Incident mỗi 30s.")
+    print("   👉 Hãy để pod redis-cart ở trạng thái tắt trong khoảng 30s - 1 phút trước khi restore,")
+    print("      hoặc chạy lệnh: python3 scripts/chaos_simulator.py --scenario telemetry-cascade để nổ alert tức thì!\n")
+
+    print("👉 BƯỚC TIẾP THEO:")
+    print("   1. Xem log lỗi cartservice văng ra: kubectl logs -l app=cartservice --tail=20")
+    print("   2. Xem dashboard Grafana cập nhật: http://localhost:30300 (hoặc port 4000)")
+    print("   3. Sau khi quan sát xong, khôi phục lại: python3 scripts/chaos_simulator.py --scenario restore")
 
 
 def scenario_bad_deployment():
