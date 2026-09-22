@@ -22,7 +22,7 @@
       "keepTime": false,
       "tags": [],
       "targetBlank": true,
-      "title": "🤖 AI Copilot Models API",
+      "title": "AI Copilot Models API",
       "tooltip": "Inspect ML Isolation Forest models & status",
       "type": "link",
       "url": "http://172.16.20.26:30083/api/v1/ml/models"
@@ -34,7 +34,7 @@
       "keepTime": false,
       "tags": [],
       "targetBlank": true,
-      "title": "🔍 RCA Service API",
+      "title": "RCA Service API",
       "tooltip": "RCA Root Cause Engine Health & Info",
       "type": "link",
       "url": "http://172.16.20.26:30082/health"
@@ -46,7 +46,7 @@
       "keepTime": true,
       "tags": [],
       "targetBlank": true,
-      "title": "⚡ Tempo Explore",
+      "title": "Tempo Explore",
       "tooltip": "Explore Distributed Tracing Spans",
       "type": "link",
       "url": "/explore?left=%7B%22datasource%22:%22tempo%22%7D"
@@ -62,7 +62,7 @@
         "y": 0
       },
       "id": 100,
-      "title": "🚨 Key Incident & Performance Indicators",
+      "title": "Key Incident & Performance Indicators",
       "type": "row"
     },
     {
@@ -383,7 +383,7 @@
         "y": 4
       },
       "id": 101,
-      "title": "📋 Live Incidents & Root Cause Analysis",
+      "title": "Live Incidents & Root Cause Analysis",
       "type": "row"
     },
     {
@@ -505,22 +505,22 @@
                 "value": [
                   {
                     "targetBlank": true,
-                    "title": "🔍 Chi tiết phân tích RCA (${__value.raw})",
+                    "title": "Chi tiết phân tích RCA (${__value.raw})",
                     "url": "http://172.16.20.26:30082/api/v1/root-causes/${__value.raw}"
                   },
                   {
                     "targetBlank": true,
-                    "title": "⚡ Tempo Distributed Traces",
+                    "title": "Tempo Distributed Traces",
                     "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
                   },
                   {
                     "targetBlank": true,
-                    "title": "📜 SRE Audit Timeline & History",
+                    "title": "SRE Audit Timeline & History",
                     "url": "http://172.16.20.26:30082/api/v1/incidents/${__value.raw}/timeline"
                   },
                   {
                     "targetBlank": true,
-                    "title": "🤖 AI Copilot Summary & Recommendations",
+                    "title": "AI Copilot Summary & Recommendations",
                     "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/summary"
                   }
                 ]
@@ -538,17 +538,17 @@
                 "value": [
                   {
                     "targetBlank": true,
-                    "title": "⚡ Tempo Traces (${__value.raw})",
+                    "title": "Tempo Traces (${__value.raw})",
                     "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22,%22serviceName%22:%22${__value.raw}%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
                   },
                   {
                     "targetBlank": true,
-                    "title": "📋 Loki Error Logs (${__value.raw})",
+                    "title": "Loki Error Logs (${__value.raw})",
                     "url": "/explore?orgId=1&left=%7B%22datasource%22:%22loki%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%7Bapp%3D~%5C%22.*${__value.raw}.*%5C%22%7D%20%7C~%20%5C%22(?i)error%7Cexception%7Cfail%5C%22%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
                   },
                   {
                     "targetBlank": true,
-                    "title": "📈 AI Dynamic Baseline & Forecast (${__value.raw})",
+                    "title": "AI Dynamic Baseline & Forecast (${__value.raw})",
                     "url": "http://172.16.20.26:30083/api/v1/baselines/dynamic/${__value.raw}/p95_latency_ms"
                   }
                 ]
@@ -668,7 +668,373 @@
         "y": 14
       },
       "id": 102,
-      "title": "🔍 Root Cause Frequency & Telemetry Anomaly Trends",
+      "title": "AI Incident Copilot & Investigation Assistant",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Incident ID"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Live AI Summary (${__value.raw})",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/summary"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "Live AI Recommendations (${__value.raw})",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/recommendations"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 18,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Generated At"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT incident_id as \"Incident ID\", provider as \"AI Provider\", model_name as \"Model\", summary_text as \"Executive RCA Narrative\", created_at as \"Generated At\" FROM incident_ai_summaries ORDER BY created_at DESC LIMIT 10;",
+          "refId": "A"
+        }
+      ],
+      "title": "AI RCA Executive Summaries",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Runbook URL"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Open Official Runbook",
+                    "url": "${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "id": 19,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Generated At"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT incident_id as \"Incident ID\", step_order as \"Step\", action_title as \"Action Title\", command as \"Shell / kubectl Command\", runbook_url as \"Runbook URL\", created_at as \"Generated At\" FROM ai_investigation_recommendations ORDER BY created_at DESC, step_order ASC LIMIT 15;",
+          "refId": "A"
+        }
+      ],
+      "title": "AI Investigation Steps & Recommended Runbooks",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 103,
+      "title": "Microservices Resource Saturation (Container CPU, Memory & Network)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prom_datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "CPU Cores",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 25
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom_datasource}"
+          },
+          "editorMode": "code",
+          "expr": "topk(8, sum by (pod) (rate(container_cpu_usage_seconds_total{container!=\"POD\", pod!=\"\"}[2m])))",
+          "legendFormat": "{{pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Top Microservices by CPU Usage (cores)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prom_datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Working Set RAM",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "mappings": [],
+          "unit": "mbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 25
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom_datasource}"
+          },
+          "editorMode": "code",
+          "expr": "topk(8, sum by (pod) (container_memory_working_set_bytes{container!=\"POD\", pod!=\"\"})) / (1024 * 1024)",
+          "legendFormat": "{{pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Top Microservices by Memory (MiB)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prom_datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Traffic Rate",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "mappings": [],
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 25
+      },
+      "id": 17,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prom_datasource}"
+          },
+          "editorMode": "code",
+          "expr": "topk(8, sum by (pod) (rate(container_network_receive_bytes_total{pod!=\"\"}[2m]))) or topk(8, sum by (pod) (rate(container_network_receive_bytes_total[2m])))",
+          "legendFormat": "{{pod}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Pod Network Receive Bandwidth (Bytes/s)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 104,
+      "title": "Root Cause Frequency & Telemetry Anomaly Trends",
       "type": "row"
     },
     {
@@ -703,7 +1069,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 34
       },
       "id": 8,
       "options": {
@@ -782,7 +1148,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 34
       },
       "id": 9,
       "options": {
@@ -805,7 +1171,7 @@
           "refId": "A"
         }
       ],
-      "title": "Telemetry Anomalies by Category (Time Series)",
+      "title": "Telemetry Anomalies by Category",
       "type": "timeseries"
     },
     {
@@ -814,114 +1180,10 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 42
       },
-      "id": 103,
-      "title": "📜 SRE Audit Timeline & Investigation History",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "${datasource}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": []
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Actor"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Incident ID"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "targetBlank": true,
-                    "title": "🔍 Chi tiết phân tích RCA (${__value.raw})",
-                    "url": "http://172.16.20.26:30082/api/v1/root-causes/${__value.raw}"
-                  },
-                  {
-                    "targetBlank": true,
-                    "title": "⚡ Tempo Distributed Traces",
-                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 24
-      },
-      "id": 10,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Timestamp"
-          }
-        ]
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "format": "table",
-          "rawSql": "SELECT COALESCE(t.timestamp, i.created_at) as \"Timestamp\", COALESCE(t.incident_id, i.incident_id) as \"Incident ID\", COALESCE(t.event_type, 'incident_created') as \"Event Type\", COALESCE(t.actor, 'system') as \"Actor\", COALESCE(t.title, 'Status: ' || i.status) as \"Action / Status\", COALESCE(t.description, i.title) as \"Details / Comments\" FROM incidents i LEFT JOIN incident_timeline_events t ON i.incident_id = t.incident_id ORDER BY \"Timestamp\" DESC LIMIT 50;",
-          "refId": "A"
-        }
-      ],
-      "title": "Incident Timeline Audit Trail (SRE Actions, Comments & Transitions)",
-      "type": "table"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 32
-      },
-      "id": 104,
-      "title": "🖥️ Cluster & Node Hardware Telemetry (CPU, Memory, Disk, Network)",
+      "id": 105,
+      "title": "Cluster & Node Hardware Telemetry",
       "type": "row"
     },
     {
@@ -962,7 +1224,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 33
+        "y": 43
       },
       "id": 11,
       "options": {
@@ -1032,7 +1294,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 33
+        "y": 43
       },
       "id": 12,
       "options": {
@@ -1102,7 +1364,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 33
+        "y": 43
       },
       "id": 13,
       "options": {
@@ -1169,7 +1431,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 33
+        "y": 43
       },
       "id": 14,
       "options": {
@@ -1209,225 +1471,10 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 49
       },
-      "id": 105,
-      "title": "⚡ Microservices Resource Saturation (Container CPU, Memory & Network)",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${prom_datasource}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "CPU Cores",
-            "axisPlacement": "auto",
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 40
-      },
-      "id": 15,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prom_datasource}"
-          },
-          "editorMode": "code",
-          "expr": "topk(6, sum by (container) (rate(container_cpu_usage_seconds_total{container!=\"\", container!=\"POD\"}[1m])))",
-          "legendFormat": "{{container}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Top Microservices by CPU Usage (cores)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${prom_datasource}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Working Set RAM",
-            "axisPlacement": "auto",
-            "drawStyle": "line",
-            "fillOpacity": 20,
-            "gradientMode": "opacity",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "mappings": [],
-          "unit": "mbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 40
-      },
-      "id": 16,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prom_datasource}"
-          },
-          "editorMode": "code",
-          "expr": "topk(6, sum by (container) (container_memory_working_set_bytes{container!=\"\", container!=\"POD\"})) / (1024 * 1024)",
-          "legendFormat": "{{container}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Top Microservices by Memory (MiB)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${prom_datasource}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "Traffic Rate",
-            "axisPlacement": "auto",
-            "drawStyle": "line",
-            "fillOpacity": 15,
-            "gradientMode": "none",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "mappings": [],
-          "unit": "Bps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 40
-      },
-      "id": 17,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prom_datasource}"
-          },
-          "editorMode": "code",
-          "expr": "topk(6, sum by (pod) (rate(container_network_receive_bytes_total{namespace=~\"default|observability\"}[1m])))",
-          "legendFormat": "{{pod}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Pod Network Receive Bandwidth (Bytes/s)",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 48
-      },
-      "id": 105,
-      "title": "🤖 AI Incident Copilot & Investigation Assistant (Phase 5)",
+      "id": 106,
+      "title": "Incident Timeline & Investigation Audit Trail",
       "type": "row"
     },
     {
@@ -1442,10 +1489,25 @@
             "cellOptions": {
               "type": "auto"
             },
-            "inspect": true
-          }
+            "inspect": false
+          },
+          "mappings": []
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Actor"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -1457,13 +1519,13 @@
                 "value": [
                   {
                     "targetBlank": true,
-                    "title": "🤖 Live AI Summary (${__value.raw})",
-                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/summary"
+                    "title": "Chi tiết phân tích RCA (${__value.raw})",
+                    "url": "http://172.16.20.26:30082/api/v1/root-causes/${__value.raw}"
                   },
                   {
                     "targetBlank": true,
-                    "title": "💡 Live AI Recommendations (${__value.raw})",
-                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/recommendations"
+                    "title": "Tempo Distributed Traces",
+                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
                   }
                 ]
               }
@@ -1472,22 +1534,27 @@
         ]
       },
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 8,
+        "w": 24,
         "x": 0,
-        "y": 49
+        "y": 50
       },
-      "id": 18,
+      "id": 10,
       "options": {
         "cellHeight": "sm",
         "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
           "show": false
         },
         "showHeader": true,
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Generated At"
+            "displayName": "Timestamp"
           }
         ]
       },
@@ -1495,78 +1562,11 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT incident_id as \"Incident ID\", provider as \"AI Provider\", model_name as \"Model\", summary_text as \"Executive RCA Narrative\", created_at as \"Generated At\" FROM incident_ai_summaries ORDER BY created_at DESC LIMIT 10;",
+          "rawSql": "SELECT COALESCE(t.timestamp, i.created_at) as \"Timestamp\", COALESCE(t.incident_id, i.incident_id) as \"Incident ID\", COALESCE(t.event_type, 'incident_created') as \"Event Type\", COALESCE(t.actor, 'system') as \"Actor\", COALESCE(t.title, 'Status: ' || i.status) as \"Action / Status\", COALESCE(t.description, i.title) as \"Details / Comments\" FROM incidents i LEFT JOIN incident_timeline_events t ON i.incident_id = t.incident_id ORDER BY \"Timestamp\" DESC LIMIT 50;",
           "refId": "A"
         }
       ],
-      "title": "🤖 AI RCA Executive Summaries",
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "postgres",
-        "uid": "${datasource}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": true
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Runbook URL"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "targetBlank": true,
-                    "title": "📖 Open Official Runbook",
-                    "url": "${__value.raw}"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 49
-      },
-      "id": 19,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Generated At"
-          }
-        ]
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "format": "table",
-          "rawSql": "SELECT incident_id as \"Incident ID\", step_order as \"Step\", action_title as \"Action Title\", command as \"Shell / kubectl Command\", runbook_url as \"Runbook URL\", created_at as \"Generated At\" FROM ai_investigation_recommendations ORDER BY created_at DESC, step_order ASC LIMIT 15;",
-          "refId": "A"
-        }
-      ],
-      "title": "💡 AI Investigation Steps & Recommended Runbooks",
+      "title": "Incident Timeline Audit Trail (SRE Actions, Comments & Transitions)",
       "type": "table"
     }
   ],
@@ -1600,7 +1600,11 @@
   "templating": {
     "list": [
       {
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": "PostgreSQL",
+          "value": "postgres"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "PostgreSQL DB",
@@ -1611,7 +1615,11 @@
         "type": "datasource"
       },
       {
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "Prometheus Metrics",

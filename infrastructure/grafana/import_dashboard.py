@@ -21,7 +21,7 @@ if sys.platform == "win32":
 
 def main():
     parser = argparse.ArgumentParser(description="Import Incident Dashboard to Grafana")
-    parser.add_argument("--url", default=os.getenv("GRAFANA_URL", "http://localhost:30300"), help="Grafana URL")
+    parser.add_argument("--url", default=os.getenv("GRAFANA_URL", "http://localhost:4000"), help="Grafana URL")
     parser.add_argument("--user", default=os.getenv("GRAFANA_USER", "admin"), help="Grafana Admin Username")
     parser.add_argument("--password", default=os.getenv("GRAFANA_PASSWORD", "observability2026"), help="Grafana Admin Password")
     args = parser.parse_args()
