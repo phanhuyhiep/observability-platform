@@ -260,6 +260,8 @@ def _render_summary_html(summary: IncidentSummaryResponse) -> str:
     .btn {{ padding: 10px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }}
     .btn-primary {{ background: #2563eb; color: white; }}
     .btn-secondary {{ background: #334155; color: #cbd5e1; }}
+    .btn-resolve {{ background: #16a34a; color: white; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; }}
+    .btn-resolve:hover {{ background: #15803d; }}
   </style>
 </head>
 <body>
@@ -292,11 +294,36 @@ def _render_summary_html(summary: IncidentSummaryResponse) -> str:
     </div>
 
     <div class="btn-group">
+      <button id="resolveBtn" class="btn btn-resolve" onclick="resolveIncident()">✅ Đánh dấu Đã Khắc Phục (Resolve)</button>
       <a class="btn btn-primary" href="/api/v1/incidents/{inc_id}/recommendations?format=html">💡 Xem Đề Xuất Điều Tra & Runbook Chi Tiết</a>
       <a class="btn btn-secondary" href="http://172.16.20.26:4000">📊 Mở Dashboard Grafana</a>
       <a class="btn btn-secondary" href="/api/v1/incidents/{inc_id}/summary?format=json">📦 Tải Dữ Liệu Raw JSON</a>
     </div>
   </div>
+
+  <script>
+    async function resolveIncident() {{
+      const btn = document.getElementById('resolveBtn');
+      if (!confirm('Bạn có chắc chắn muốn chuyển trạng thái sự cố {inc_id} sang RESOLVED?')) return;
+      btn.disabled = true;
+      btn.innerText = '⏳ Đang chuyển trạng thái...';
+      try {{
+        const res = await fetch('/api/v1/incidents/{inc_id}/resolve', {{
+          method: 'POST',
+          headers: {{'Content-Type': 'application/json'}},
+          body: JSON.stringify({{actor: 'sre-engineer', comment: 'Khắc phục hoàn tất qua 1-Click AI Copilot UI'}})
+        }});
+        const data = await res.json();
+        btn.style.background = '#059669';
+        btn.innerText = '🎉 ĐÃ RESOLVED (MTTR: ' + Math.round(data.mttr_seconds || 0) + 's)';
+        alert('Sự cố {inc_id} đã được chuyển sang RESOLVED!\nMTTR: ' + Math.round(data.mttr_seconds || 0) + ' giây.');
+      }} catch (err) {{
+        btn.disabled = false;
+        btn.innerText = '❌ Lỗi thử lại';
+        alert('Lỗi: ' + err);
+      }}
+    }}
+  </script>
 </body>
 </html>"""
 
@@ -359,6 +386,8 @@ def _render_recommendations_html(resp: InvestigationRecommendationResponse) -> s
     .btn {{ padding: 10px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }}
     .btn-primary {{ background: #2563eb; color: white; }}
     .btn-secondary {{ background: #334155; color: #cbd5e1; }}
+    .btn-resolve {{ background: #16a34a; color: white; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; }}
+    .btn-resolve:hover {{ background: #15803d; }}
   </style>
 </head>
 <body>
@@ -381,11 +410,36 @@ def _render_recommendations_html(resp: InvestigationRecommendationResponse) -> s
     </div>
 
     <div class="btn-group">
+      <button id="resolveBtn" class="btn btn-resolve" onclick="resolveIncident()">✅ Đánh dấu Đã Khắc Phục (Resolve)</button>
       <a class="btn btn-primary" href="/api/v1/incidents/{inc_id}/summary?format=html">📄 Quay Lại Báo Cáo Tóm Tắt Sự Cố</a>
       <a class="btn btn-secondary" href="http://172.16.20.26:4000">📊 Mở Dashboard Grafana</a>
       <a class="btn btn-secondary" href="/api/v1/incidents/{inc_id}/recommendations?format=json">📦 Tải Dữ Liệu Raw JSON</a>
     </div>
   </div>
+
+  <script>
+    async function resolveIncident() {{
+      const btn = document.getElementById('resolveBtn');
+      if (!confirm('Bạn có chắc chắn muốn chuyển trạng thái sự cố {inc_id} sang RESOLVED?')) return;
+      btn.disabled = true;
+      btn.innerText = '⏳ Đang chuyển trạng thái...';
+      try {{
+        const res = await fetch('/api/v1/incidents/{inc_id}/resolve', {{
+          method: 'POST',
+          headers: {{'Content-Type': 'application/json'}},
+          body: JSON.stringify({{actor: 'sre-engineer', comment: 'Khắc phục hoàn tất qua 1-Click AI Copilot Runbook UI'}})
+        }});
+        const data = await res.json();
+        btn.style.background = '#059669';
+        btn.innerText = '🎉 ĐÃ RESOLVED (MTTR: ' + Math.round(data.mttr_seconds || 0) + 's)';
+        alert('Sự cố {inc_id} đã được chuyển sang RESOLVED!\nMTTR: ' + Math.round(data.mttr_seconds || 0) + ' giây.');
+      }} catch (err) {{
+        btn.disabled = false;
+        btn.innerText = '❌ Lỗi thử lại';
+        alert('Lỗi: ' + err);
+      }}
+    }}
+  </script>
 </body>
 </html>"""
 
@@ -451,6 +505,53 @@ async def get_incident_summary(
 async def regenerate_incident_summary(incident_id: str, request: Request):
     """Force re-run AI summarization for an updated incident."""
     return await get_incident_summary(incident_id, request=request, force=True, format="json")
+
+
+@router.post("/api/v1/incidents/{incident_id}/resolve", tags=["AI Copilot"])
+async def resolve_incident_endpoint(incident_id: str, payload: dict | None = None):
+    """1-Click Resolve endpoint directly from AI Copilot Web UI."""
+    actor = (payload or {}).get("actor", "sre-engineer")
+    comment = (payload or {}).get("comment", "Resolved via 1-Click AI Copilot Web UI")
+    mttr = 0.0
+
+    if db_pool:
+        try:
+            async with db_pool.acquire() as conn:
+                row = await conn.fetchrow(
+                    """
+                    UPDATE incidents
+                    SET status = 'RESOLVED',
+                        resolved_at = now(),
+                        updated_at = now(),
+                        mttr_seconds = EXTRACT(EPOCH FROM (now() - created_at))
+                    WHERE incident_id = $1
+                    RETURNING mttr_seconds, status;
+                    """,
+                    incident_id,
+                )
+                if row and row["mttr_seconds"]:
+                    mttr = float(row["mttr_seconds"])
+
+                await conn.execute(
+                    """
+                    INSERT INTO incident_timeline_events (incident_id, timestamp, event_type, actor, title, description)
+                    VALUES ($1, now(), 'state_change', $2, 'Status: RESOLVED', $3);
+                    """,
+                    incident_id,
+                    actor,
+                    comment,
+                )
+                logger.info("Incident %s successfully marked as RESOLVED (MTTR: %.1fs)", incident_id, mttr)
+        except Exception as e:
+            logger.error("Error resolving incident %s: %s", incident_id, e)
+
+    return {
+        "status": "RESOLVED",
+        "incident_id": incident_id,
+        "mttr_seconds": mttr,
+        "message": f"Incident {incident_id} successfully marked as RESOLVED",
+    }
+
 
 
 @router.get("/api/v1/incidents/{incident_id}/recommendations", tags=["AI Copilot"])
