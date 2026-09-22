@@ -126,6 +126,118 @@ def send_telegram_alert(
     return False
 
 
+def get_slack_webhook_url() -> str | None:
+    """Extract Slack Webhook URL from notification-secret.yaml or environment."""
+    url = os.getenv("SLACK_WEBHOOK_URL")
+    if url:
+        return url
+    secret_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "services", "rca-service", "k8s", "notification-secret.yaml",
+    )
+    if os.path.exists(secret_path):
+        try:
+            import re
+            with open(secret_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                m = re.search(r'SLACK_WEBHOOK_URL:\s*["\']?([^"\'\s\n]+)["\']?', content)
+                if m and m.group(1).startswith("http"):
+                    return m.group(1).strip()
+        except Exception:
+            pass
+    return None
+
+
+def send_slack_alert(
+    incident_id: str,
+    title: str,
+    severity: str,
+    root_cause: str,
+    confidence: float,
+    impacted: list[str],
+    grafana_url: str = "http://172.16.20.26:4000",
+) -> bool:
+    """Send Slack Block Kit interactive card via incoming webhook."""
+    webhook_url = get_slack_webhook_url()
+    if not webhook_url:
+        return False
+
+    emoji_map = {"critical": "🔴", "high": "🟠", "warning": "🟡", "info": "🔵"}
+    emoji = emoji_map.get(severity.lower(), "⚪")
+    impacted_str = ", ".join(impacted) if impacted else "None"
+
+    payload = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"{emoji} Incident {incident_id} | {severity.upper()}",
+                    "emoji": True,
+                },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*{title}*",
+                },
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Root Cause:*\n`{root_cause}` ({confidence * 100:.0f}% confidence)",
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": "*User Impact:*\n`CRITICAL`",
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Impacted Services:*\n{impacted_str}",
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Dashboard:*\n<{grafana_url}|View in Grafana>",
+                    },
+                ],
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Acknowledge"},
+                        "style": "primary",
+                        "value": f"ack_{incident_id}",
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "Investigate Traces (Tempo)"},
+                        "url": f"{grafana_url}/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D%7D",
+                    },
+                ],
+            },
+        ]
+    }
+
+    req = urllib.request.Request(
+        webhook_url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            if resp.status == 200:
+                print(f"   💬 [SLACK] Đã bắn thẻ cảnh báo Block Kit tới kênh Slack thành công!")
+                return True
+    except Exception as e:
+        print(f"   ⚠️ Lỗi gửi tin nhắn Slack: {e}")
+    return False
+
+
 def insert_incident_to_db(
     incident_id: str,
     title: str,
@@ -217,6 +329,14 @@ def scenario_redis_down():
         confidence=0.95,
     )
     send_telegram_alert(
+        incident_id=incident_id,
+        title=title,
+        severity="CRITICAL",
+        root_cause="redis-cart",
+        confidence=0.95,
+        impacted=["redis-cart", "cartservice", "frontend"],
+    )
+    send_slack_alert(
         incident_id=incident_id,
         title=title,
         severity="CRITICAL",
@@ -370,6 +490,14 @@ def scenario_telemetry_cascade():
 
     print("\n[3/3] Gửi thông báo báo động đỏ tới Telegram...")
     send_telegram_alert(
+        incident_id=incident_id,
+        title=title,
+        severity="CRITICAL",
+        root_cause="redis-cart",
+        confidence=0.96,
+        impacted=["redis-cart", "cartservice", "checkoutservice", "frontend"],
+    )
+    send_slack_alert(
         incident_id=incident_id,
         title=title,
         severity="CRITICAL",
