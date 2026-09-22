@@ -40,7 +40,7 @@ llm:
   # Supported providers: "gemini", "openai", "sre_expert"
   provider: "sre_expert"
   model: "gemini-1.5-flash"
-  gemini_api_key: ""
+  gemini_api_key: "AQ.Ab8RN6LzP3Me5Q5YB_dQiZUTkSELWrnEZEFODNdHjLuriah07g"
   openai_api_key: ""
   temperature: 0.2
   max_tokens: 1200
