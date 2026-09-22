@@ -212,6 +212,20 @@ def safe_escape(val: Any) -> str:
     return html.escape(str(val))
 
 
+def _parse_json_dict(val: Any) -> dict:
+    """Safely decode JSON string or dict from database row."""
+    if isinstance(val, dict):
+        return val
+    if isinstance(val, str):
+        try:
+            parsed = json.loads(val)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+    return {}
+
+
 def _render_summary_html(summary: IncidentSummaryResponse) -> str:
     actions_html = "".join(f"<li><code>{safe_escape(a)}</code></li>" for a in (summary.suggested_actions or []))
     overview = safe_escape(summary.executive_overview or summary.summary_text)
@@ -405,8 +419,8 @@ async def get_incident_summary(
                     if isinstance(imp, str):
                         imp = json.loads(imp)
                     impacted = imp or []
-                    meta = row.get("metadata") or {}
-                    top_ctx = row.get("topology_context") or {}
+                    meta = _parse_json_dict(row.get("metadata"))
+                    top_ctx = _parse_json_dict(row.get("topology_context"))
                     root_cause = meta.get("root_candidate") or top_ctx.get("root_entity_candidate") or (impacted[0] if impacted else "unknown")
                     confidence = float(top_ctx.get("confidence", 0.92))
         except Exception as e:
@@ -463,8 +477,8 @@ async def get_investigation_recommendations(
                     if isinstance(imp, str):
                         imp = json.loads(imp)
                     impacted = imp or []
-                    meta = row.get("metadata") or {}
-                    top_ctx = row.get("topology_context") or {}
+                    meta = _parse_json_dict(row.get("metadata"))
+                    top_ctx = _parse_json_dict(row.get("topology_context"))
                     root_cause = meta.get("root_candidate") or top_ctx.get("root_entity_candidate") or (impacted[0] if impacted else "unknown")
         except Exception as e:
             logger.warning("Error fetching incident for recommendations: %s", e)
@@ -515,8 +529,8 @@ async def get_similar_incidents(incident_id: str, limit: int = 3):
                     if isinstance(imp, str):
                         imp = json.loads(imp)
                     impacted = imp or []
-                    meta = row.get("metadata") or {}
-                    top_ctx = row.get("topology_context") or {}
+                    meta = _parse_json_dict(row.get("metadata"))
+                    top_ctx = _parse_json_dict(row.get("topology_context"))
                     root_cause = meta.get("root_candidate") or top_ctx.get("root_entity_candidate") or "unknown"
         except Exception:
             pass
