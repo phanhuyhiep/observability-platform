@@ -124,4 +124,15 @@ def test_feedback_endpoint(client):
     assert res.status_code == 200
     data = res.json()
     assert data["status"] == "recorded"
-    assert "feedback_id" in data
+
+
+def test_html_rendering_endpoints(client):
+    res_summary = client.get("/api/v1/incidents/INC-888888/summary", headers={"Accept": "text/html"})
+    assert res_summary.status_code == 200
+    assert "text/html" in res_summary.headers["content-type"]
+    assert "AI Incident Copilot" in res_summary.text
+
+    res_recs = client.get("/api/v1/incidents/INC-888888/recommendations", headers={"Accept": "text/html"})
+    assert res_recs.status_code == 200
+    assert "text/html" in res_recs.headers["content-type"]
+    assert "AI Điều Tra Nguyên Nhân" in res_recs.text

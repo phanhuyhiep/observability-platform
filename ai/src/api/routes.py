@@ -205,14 +205,28 @@ async def get_dynamic_baseline(
 # 3. LLM Incident Copilot & Investigation Assistant
 # ---------------------------------------------------------------------------
 
+def safe_escape(val: Any) -> str:
+    """Null-safe HTML escaping for dynamic telemetry and recommendation fields."""
+    if val is None:
+        return ""
+    return html.escape(str(val))
+
+
 def _render_summary_html(summary: IncidentSummaryResponse) -> str:
-    actions_html = "".join(f"<li><code>{html.escape(a)}</code></li>" for a in summary.suggested_actions)
+    actions_html = "".join(f"<li><code>{safe_escape(a)}</code></li>" for a in (summary.suggested_actions or []))
+    overview = safe_escape(summary.executive_overview or summary.summary_text)
+    root_cause = safe_escape(summary.root_cause_explanation)
+    inc_id = safe_escape(summary.incident_id)
+    provider = safe_escape(summary.provider).upper()
+    model = safe_escape(summary.model_name)
+    created_at = summary.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') if summary.created_at else ""
+
     return f"""<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI RCA Report - {summary.incident_id}</title>
+  <title>AI RCA Report - {inc_id}</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -238,22 +252,22 @@ def _render_summary_html(summary: IncidentSummaryResponse) -> str:
   <div class="container">
     <div class="header">
       <div class="badge-bar">
-        <span class="badge">SỰ CỐ {html.escape(summary.incident_id)}</span>
-        <span class="badge-model">🤖 {html.escape(summary.provider.upper())} ({html.escape(summary.model_name)})</span>
+        <span class="badge">SỰ CỐ {inc_id}</span>
+        <span class="badge-model">🤖 {provider} ({model})</span>
         <span style="font-size: 12px; color: #94a3b8;">Tokens: {summary.tokens_used}</span>
       </div>
       <h1>AI Incident Copilot – Báo Cáo Phân Tích Sự Cố</h1>
-      <p style="color: #94a3b8; font-size: 13px;">Khởi tạo lúc: {summary.created_at.strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
+      <p style="color: #94a3b8; font-size: 13px;">Khởi tạo lúc: {created_at}</p>
     </div>
 
     <div class="card">
       <h2>📋 Tóm tắt Diễn biến & Tác động Sự cố</h2>
-      <div class="narrative">{html.escape(summary.executive_overview or summary.summary_text)}</div>
+      <div class="narrative">{overview}</div>
     </div>
 
     <div class="card">
       <h2>🎯 Phân tích Nguyên nhân Gốc (Root Cause Candidate)</h2>
-      <div class="narrative">{html.escape(summary.root_cause_explanation)}</div>
+      <div class="narrative">{root_cause}</div>
     </div>
 
     <div class="card">
@@ -264,9 +278,9 @@ def _render_summary_html(summary: IncidentSummaryResponse) -> str:
     </div>
 
     <div class="btn-group">
-      <a class="btn btn-primary" href="/api/v1/incidents/{summary.incident_id}/recommendations?format=html">💡 Xem Đề Xuất Điều Tra & Runbook Chi Tiết</a>
+      <a class="btn btn-primary" href="/api/v1/incidents/{inc_id}/recommendations?format=html">💡 Xem Đề Xuất Điều Tra & Runbook Chi Tiết</a>
       <a class="btn btn-secondary" href="http://172.16.20.26:4000">📊 Mở Dashboard Grafana</a>
-      <a class="btn btn-secondary" href="/api/v1/incidents/{summary.incident_id}/summary?format=json">📦 Tải Dữ Liệu Raw JSON</a>
+      <a class="btn btn-secondary" href="/api/v1/incidents/{inc_id}/summary?format=json">📦 Tải Dữ Liệu Raw JSON</a>
     </div>
   </div>
 </body>
@@ -274,26 +288,41 @@ def _render_summary_html(summary: IncidentSummaryResponse) -> str:
 
 
 def _render_recommendations_html(resp: InvestigationRecommendationResponse) -> str:
+    inc_id = safe_escape(resp.incident_id)
     steps_html = ""
-    for r in resp.recommendations:
-        runbook_btn = f"<a style='color: #38bdf8; font-size: 12px; text-decoration: underline;' href='{html.escape(r.runbook_url)}' target='_blank'>📖 Mở Runbook hướng dẫn</a>" if r.runbook_url else ""
+    for r in (resp.recommendations or []):
+        runbook_btn = f"<a style='color: #38bdf8; font-size: 12px; text-decoration: underline;' href='{safe_escape(r.runbook_url)}' target='_blank'>📖 Mở Runbook hướng dẫn</a>" if r.runbook_url else ""
+        reasoning_p = f"<p style='color: #94a3b8; font-size: 13px; margin-bottom: 8px;'>{safe_escape(r.reasoning)}</p>" if r.reasoning else ""
+        cmd_block = f"<div style='background: #030712; padding: 10px; border-radius: 6px; font-family: monospace; color: #a5f3fc; font-size: 13px;'>{safe_escape(r.command)}</div>" if r.command else ""
         steps_html += f"""
         <div style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <span style="font-weight: 700; color: #f8fafc;">Bước {r.step_order}: {html.escape(r.action_title)}</span>
+            <span style="font-weight: 700; color: #f8fafc;">Bước {r.step_order}: {safe_escape(r.action_title)}</span>
             {runbook_btn}
           </div>
-          <p style="color: #94a3b8; font-size: 13px; margin-bottom: 8px;">{html.escape(r.reasoning)}</p>
-          <div style="background: #030712; padding: 10px; border-radius: 6px; font-family: monospace; color: #a5f3fc; font-size: 13px;">{html.escape(r.command)}</div>
+          {reasoning_p}
+          {cmd_block}
         </div>
         """
 
     similar_html = ""
-    for s in resp.similar_incidents:
+    for s in (resp.similar_incidents or []):
+        if isinstance(s, dict):
+            s_inc = s.get("incident_id")
+            s_score = s.get("similarity_score")
+            s_title = s.get("title")
+            s_res = s.get("resolution_summary")
+        else:
+            s_inc = getattr(s, "incident_id", None)
+            s_score = getattr(s, "similarity_score", None)
+            s_title = getattr(s, "title", None)
+            s_res = getattr(s, "resolution_summary", None)
+
+        sim_score = int(float(s_score or 0.0) * 100)
         similar_html += f"""
         <li style="background: #0f172a; border: 1px solid #334155; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;">
-          <span style="font-weight: 700; color: #38bdf8;">{html.escape(s.get('incident_id', ''))}</span> (Độ tương đồng: <b>{int(s.get('similarity_score', 0)*100)}%</b>) - <i>{html.escape(s.get('title', ''))}</i>
-          <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Cách xử lý: {html.escape(s.get('resolution_summary', 'Chưa ghi nhận'))}</p>
+          <span style="font-weight: 700; color: #38bdf8;">{safe_escape(s_inc)}</span> (Độ tương đồng: <b>{sim_score}%</b>) - <i>{safe_escape(s_title)}</i>
+          <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">Cách xử lý: {safe_escape(s_res or 'Chưa ghi nhận')}</p>
         </li>
         """
 
@@ -302,7 +331,7 @@ def _render_recommendations_html(resp: InvestigationRecommendationResponse) -> s
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Investigation Steps - {resp.incident_id}</title>
+  <title>AI Investigation Steps - {inc_id}</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -322,7 +351,7 @@ def _render_recommendations_html(resp: InvestigationRecommendationResponse) -> s
   <div class="container">
     <div class="header">
       <h1>💡 AI Điều Tra Nguyên Nhân & Đề Xuất Runbook</h1>
-      <p style="color: #94a3b8; font-size: 13px;">Sự cố tham chiếu: <b>{html.escape(resp.incident_id)}</b></p>
+      <p style="color: #94a3b8; font-size: 13px;">Sự cố tham chiếu: <b>{inc_id}</b></p>
     </div>
 
     <div class="card">
@@ -338,9 +367,9 @@ def _render_recommendations_html(resp: InvestigationRecommendationResponse) -> s
     </div>
 
     <div class="btn-group">
-      <a class="btn btn-primary" href="/api/v1/incidents/{resp.incident_id}/summary?format=html">📄 Quay Lại Báo Cáo Tóm Tắt Sự Cố</a>
+      <a class="btn btn-primary" href="/api/v1/incidents/{inc_id}/summary?format=html">📄 Quay Lại Báo Cáo Tóm Tắt Sự Cố</a>
       <a class="btn btn-secondary" href="http://172.16.20.26:4000">📊 Mở Dashboard Grafana</a>
-      <a class="btn btn-secondary" href="/api/v1/incidents/{resp.incident_id}/recommendations?format=json">📦 Tải Dữ Liệu Raw JSON</a>
+      <a class="btn btn-secondary" href="/api/v1/incidents/{inc_id}/recommendations?format=json">📦 Tải Dữ Liệu Raw JSON</a>
     </div>
   </div>
 </body>
@@ -395,7 +424,11 @@ async def get_incident_summary(
 
     accept_header = request.headers.get("accept", "")
     if format == "html" or (format != "json" and "text/html" in accept_header):
-        return HTMLResponse(content=_render_summary_html(summary))
+        try:
+            return HTMLResponse(content=_render_summary_html(summary))
+        except Exception as e:
+            logger.exception("Error rendering HTML summary, falling back to JSON: %s", e)
+            return summary
 
     return summary
 
@@ -453,7 +486,11 @@ async def get_investigation_recommendations(
 
     accept_header = request.headers.get("accept", "")
     if format == "html" or (format != "json" and "text/html" in accept_header):
-        return HTMLResponse(content=_render_recommendations_html(resp))
+        try:
+            return HTMLResponse(content=_render_recommendations_html(resp))
+        except Exception as e:
+            logger.exception("Error rendering HTML recommendations, falling back to JSON: %s", e)
+            return resp
 
     return resp
 
