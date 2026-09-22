@@ -482,6 +482,11 @@
                     "targetBlank": true,
                     "title": "📜 SRE Audit Timeline & History",
                     "url": "http://172.16.20.26:30082/api/v1/incidents/${__value.raw}/timeline"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "🤖 AI Copilot Summary & Recommendations",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/summary"
                   }
                 ]
               }
@@ -505,6 +510,11 @@
                     "targetBlank": true,
                     "title": "📋 Loki Error Logs (${__value.raw})",
                     "url": "/explore?orgId=1&left=%7B%22datasource%22:%22loki%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%7Bapp%3D~%5C%22.*${__value.raw}.*%5C%22%7D%20%7C~%20%5C%22(?i)error%7Cexception%7Cfail%5C%22%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "📈 AI Dynamic Baseline & Forecast (${__value.raw})",
+                    "url": "http://172.16.20.26:30083/api/v1/baselines/dynamic/${__value.raw}/p95_latency_ms"
                   }
                 ]
               }

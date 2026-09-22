@@ -1,0 +1,47 @@
+# AI Enhancement Service Configuration - Phase 5
+server:
+  host: "0.0.0.0"
+  port: 8083
+
+storage:
+  database_url: "postgresql://detection:detection2026@detection-postgres:5432/detection_db"
+
+telemetry:
+  prometheus_url: "http://prometheus-kube-prometheus-prometheus.observability.svc.cluster.local:9090"
+  loki_url: "http://loki.observability.svc.cluster.local:3100"
+  tempo_url: "http://tempo.observability.svc.cluster.local:3200"
+  rca_service_url: "http://rca-service:8082"
+
+isolation_forest:
+  enabled: true
+  n_estimators: 100
+  contamination: 0.02
+  random_state: 42
+  features:
+    - "cpu_usage"
+    - "memory_usage"
+    - "p95_latency_ms"
+    - "error_rate"
+    - "request_throughput"
+    - "dependency_latency_ms"
+  retrain_interval_hours: 24
+  min_samples_to_train: 20
+
+forecasting:
+  enabled: true
+  horizon_minutes: 60
+  interval_minutes: 5
+  daily_seasonality_points: 288    # 24h / 5m = 288 points
+  confidence_level: 0.95
+  anomaly_z_threshold: 3.0
+
+llm:
+  enabled: true
+  # Supported providers: "gemini", "openai", "sre_expert"
+  provider: "sre_expert"
+  model: "gemini-1.5-flash"
+  gemini_api_key: ""
+  openai_api_key: ""
+  temperature: 0.2
+  max_tokens: 1200
+  cache_ttl_seconds: 1800
