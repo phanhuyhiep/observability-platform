@@ -92,6 +92,17 @@ async def incident_watcher_job(ranker: RootCauseRanker, blast_calc: BlastRadiusC
             for r in rows:
                 inc_id = r["incident_id"]
                 if inc_id not in notified_incidents:
+                    # Check DB to prevent duplicate dispatch if already notified
+                    try:
+                        already_sent = await conn.fetchval(
+                            "SELECT 1 FROM notification_history WHERE incident_id = $1 LIMIT 1",
+                            inc_id,
+                        )
+                        if already_sent:
+                            notified_incidents.add(inc_id)
+                            continue
+                    except Exception:
+                        pass
                     imp = r["impacted_entities"]
                     if isinstance(imp, str):
                         try:
@@ -198,6 +209,16 @@ async def lifespan(app: FastAPI):
                 )
                 incidents_cache[inc.incident_id] = inc
         logger.info("Loaded %d historical incidents from DB", len(incidents_cache))
+
+        # Populate notified_incidents set from history to prevent duplicate alerts across restarts
+        try:
+            async with db_pool.acquire() as conn:
+                hist_rows = await conn.fetch("SELECT DISTINCT incident_id FROM notification_history")
+                for hr in hist_rows:
+                    notified_incidents.add(hr["incident_id"])
+            logger.info("Loaded %d notified incident IDs from history", len(notified_incidents))
+        except Exception as e:
+            logger.warning("Could not load notification history: %s", e)
     except Exception as e:
         logger.warning("Could not connect to DB on startup: %s. Operating with in-memory store.", e)
         db_pool = None

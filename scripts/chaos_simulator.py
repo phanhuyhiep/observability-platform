@@ -254,6 +254,70 @@ def send_slack_alert(
     return False
 
 
+def is_rca_service_running() -> bool:
+    """Check if rca-service pod is running in Kubernetes cluster."""
+    code, out, _ = run_cmd([
+        "kubectl", "get", "pods", "-l", "app=rca-service",
+        "-n", "observability", "--no-headers"
+    ])
+    if code == 0 and "Running" in out:
+        return True
+    return False
+
+
+def record_notification_in_db(incident_id: str, channel: str = "telegram"):
+    """Record dispatched notification into PostgreSQL to avoid rca-service duplicate sends."""
+    sql = f"""
+    INSERT INTO notification_history (incident_id, timestamp, channel, status, payload)
+    VALUES ('{incident_id}', now(), '{channel}', 'sent', '{{"source": "chaos_simulator"}}');
+    """
+    cmd = [
+        "kubectl", "exec", "-i", "deployment/detection-postgres", "-n", "observability",
+        "--", "psql", "-U", "detection", "-d", "detection_db"
+    ]
+    run_cmd_stdin(cmd, sql)
+
+
+def dispatch_incident_alerts(
+    incident_id: str,
+    title: str,
+    severity: str,
+    root_cause: str,
+    confidence: float,
+    impacted: list[str],
+):
+    """
+    Prevent 2x notification spam:
+    - If rca-service is running in Kubernetes, it automatically watches the database,
+      computes the real RCA graph scores, and dispatches 1 clean alert to Telegram & Slack.
+    - If rca-service is NOT running (standalone test), Chaos Simulator sends direct alerts as fallback.
+    """
+    if is_rca_service_running():
+        print("   📡 [RCA-SERVICE] Đang chạy trong cluster -> RCA Engine tự động phân tích và gửi 1 cảnh báo duy nhất (chống spam 2 lần)!")
+        return
+
+    print("   ⚠️ RCA Service không chạy trong cluster -> Chaos Simulator gửi cảnh báo trực tiếp (fallback)...")
+    if send_telegram_alert(
+        incident_id=incident_id,
+        title=title,
+        severity=severity,
+        root_cause=root_cause,
+        confidence=confidence,
+        impacted=impacted,
+    ):
+        record_notification_in_db(incident_id, "telegram")
+
+    if send_slack_alert(
+        incident_id=incident_id,
+        title=title,
+        severity=severity,
+        root_cause=root_cause,
+        confidence=confidence,
+        impacted=impacted,
+    ):
+        record_notification_in_db(incident_id, "slack")
+
+
 def insert_incident_to_db(
     incident_id: str,
     title: str,
@@ -344,15 +408,7 @@ def scenario_redis_down():
         impacted=["redis-cart", "cartservice", "frontend"],
         confidence=0.95,
     )
-    send_telegram_alert(
-        incident_id=incident_id,
-        title=title,
-        severity="CRITICAL",
-        root_cause="redis-cart",
-        confidence=0.95,
-        impacted=["redis-cart", "cartservice", "frontend"],
-    )
-    send_slack_alert(
+    dispatch_incident_alerts(
         incident_id=incident_id,
         title=title,
         severity="CRITICAL",
@@ -405,16 +461,8 @@ def scenario_bad_deployment():
         confidence=0.96,
     )
 
-    print("\n[3/3] Gửi cảnh báo đỏ tới Telegram & Slack...")
-    send_telegram_alert(
-        incident_id=incident_id,
-        title=title,
-        severity="HIGH",
-        root_cause="cartservice",
-        confidence=0.96,
-        impacted=["cartservice", "frontend", "checkoutservice"],
-    )
-    send_slack_alert(
+    print("\n[3/3] Điều phối thông báo sự cố...")
+    dispatch_incident_alerts(
         incident_id=incident_id,
         title=title,
         severity="HIGH",
@@ -462,16 +510,8 @@ def scenario_traffic_surge():
         confidence=0.93,
     )
 
-    print("\n[3/3] Gửi cảnh báo đỏ tới Telegram & Slack...")
-    send_telegram_alert(
-        incident_id=incident_id,
-        title=title,
-        severity="CRITICAL",
-        root_cause="loadgenerator",
-        confidence=0.93,
-        impacted=["loadgenerator", "frontend", "productcatalogservice", "cartservice", "adservice"],
-    )
-    send_slack_alert(
+    print("\n[3/3] Điều phối thông báo sự cố...")
+    dispatch_incident_alerts(
         incident_id=incident_id,
         title=title,
         severity="CRITICAL",
@@ -555,16 +595,8 @@ def scenario_telemetry_cascade():
         confidence=0.96,
     )
 
-    print("\n[3/3] Gửi thông báo báo động đỏ tới Telegram...")
-    send_telegram_alert(
-        incident_id=incident_id,
-        title=title,
-        severity="CRITICAL",
-        root_cause="redis-cart",
-        confidence=0.96,
-        impacted=["redis-cart", "cartservice", "checkoutservice", "frontend"],
-    )
-    send_slack_alert(
+    print("\n[3/3] Điều phối thông báo sự cố...")
+    dispatch_incident_alerts(
         incident_id=incident_id,
         title=title,
         severity="CRITICAL",
