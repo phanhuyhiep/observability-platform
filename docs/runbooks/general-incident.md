@@ -24,6 +24,12 @@ kubectl top nodes
 kubectl top pods -A --sort-by=cpu | head -n 15
 ```
 
+> [!TIP]
+> **Nếu gặp lỗi `error: Metrics API not available`:** Cụm Kubernetes chưa kích hoạt `metrics-server`.
+> - **Trên Minikube:** Chạy `minikube addons enable metrics-server` (chờ khoảng 30-60s để metrics-server pod ready).
+> - **Trên cụm K8s Cloud/On-Prem:** Cài đặt qua manifest: `kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml`
+
+
 ### Bước 2: Kiểm tra các Pod bị lỗi hoặc khởi động lại gần đây
 ```bash
 # Tìm các pod không ở trạng thái Running / Ready
