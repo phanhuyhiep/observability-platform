@@ -159,6 +159,67 @@ Provide:
                 f"Scale phục hồi pod redis-cart: kubectl scale deployment/{root_cause} --replicas=1",
                 f"Soi trace phân tán trong Grafana Tempo để xác nhận không còn HTTP 500",
             ]
+        elif "cart" in root_cause.lower():
+            overview = (
+                f"Sự cố {incident_id} ({severity.upper()}) phát sinh từ vi dịch vụ trung tâm '{root_cause}'. "
+                f"Lỗi logic hoặc cấu hình sai đã làm suy giảm nghiêm trọng khả năng xử lý giỏ hàng, lan truyền lỗi ngược dòng lên {impact_str} "
+                f"với mức độ tác động người dùng: {user_impact}."
+            )
+            explanation = (
+                f"Dịch vụ '{root_cause}' gặp lỗi cấu hình kết nối (REDIS_ADDR sai) hoặc cạn kiệt thread pool kết nối. "
+                f"Bản rollout gần nhất đã đưa cấu hình bất thường vào runtime, khiến các lời gọi gRPC GetCart/AddItem thất bại liên tục."
+            )
+            actions = [
+                f"Kiểm tra cấu hình biến môi trường: kubectl describe deployment/{root_cause} | grep -A 5 Environment",
+                f"Xem stack trace lỗi: kubectl logs -l app={root_cause} --tail=100 | grep -i Exception",
+                f"Thực hiện rollback hoặc graceful restart: kubectl rollout restart deployment/{root_cause} -n default",
+                f"Soi trace phân tán trên Grafana Tempo để xác nhận độ trễ giảm về mức an toàn",
+            ]
+        elif "loadgenerator" in root_cause.lower():
+            overview = (
+                f"Sự cố {incident_id} ({severity.upper()}) do hiện tượng quá tải lưu lượng đột biến xuất phát từ '{root_cause}'. "
+                f"Lưu lượng tăng vọt đã tạo nghẽn cổ chai (traffic spike) trên các dịch vụ hạ lưu: {impact_str} ({user_impact})."
+            )
+            explanation = (
+                f"Lượng request throughput trên '{root_cause}' tăng đột biến gấp nhiều lần mức baseline thông thường. "
+                f"Các dịch vụ hạ lưu (frontend, cartservice, adservice) bị cạn kiệt connection pool và bão hòa CPU/RAM dẫn tới tăng vọt độ trễ p95."
+            )
+            actions = [
+                f"Kiểm tra số lượng replica loadgenerator: kubectl get deployment/{root_cause} -o jsonpath='{{.spec.replicas}}'",
+                f"Hạ tải về ngưỡng an toàn: kubectl scale deployment/{root_cause} --replicas=1",
+                f"Theo dõi biểu đồ p95 latency và error rate trên Grafana Dashboard",
+                f"Đóng sự cố sau khi lưu lượng ổn định: python3 scripts/sre_ops.py --resolve {incident_id}",
+            ]
+        elif "checkout" in root_cause.lower():
+            overview = (
+                f"Sự cố {incident_id} ({severity.upper()}) xảy ra tại trung tâm thanh toán & đơn hàng '{root_cause}'. "
+                f"Quy trình thanh toán (Checkout Pipeline) bị tê liệt, ảnh hưởng trực tiếp tới giao dịch mua sắm của người dùng: {user_impact}."
+            )
+            explanation = (
+                f"Dịch vụ '{root_cause}' là nút giao thoa phức tạp gọi đồng thời emailservice, paymentservice, shippingservice và cartservice. "
+                f"Sự cố tắc nghẽn gRPC hoặc lỗi xác thực thanh toán đã gây dồn ứ request tại hàng đợi checkout."
+            )
+            actions = [
+                f"Kiểm tra nhật ký giao dịch thanh toán: kubectl logs -l app={root_cause} --tail=100",
+                f"Kiểm tra tính sẵn sàng của paymentservice: kubectl get pods -l app=paymentservice",
+                f"Kiểm tra gRPC error rate trên Grafana Service Mesh dashboard",
+                f"Xác nhận đơn hàng mẫu sau khi khắc phục để kiểm tra tính toàn vẹn hệ thống",
+            ]
+        elif "frontend" in root_cause.lower():
+            overview = (
+                f"Sự cố {incident_id} ({severity.upper()}) phát sinh tại cổng giao tiếp Ingress/Frontend '{root_cause}'. "
+                f"Giao diện người dùng bị gián đoạn hoặc tỷ lệ HTTP 500 tăng cao, ảnh hưởng trực tiếp tới toàn bộ người dùng ({user_impact})."
+            )
+            explanation = (
+                f"Frontend gateway bị quá tải worker threads hoặc gặp lỗi kết nối tới các dịch vụ backend hạ tầng. "
+                f"Người dùng truy cập trang chủ gặp màn hình lỗi hoặc thời gian tải trang vượt ngưỡng timeout chuẩn."
+            )
+            actions = [
+                f"Kiểm tra log lỗi HTTP 500: kubectl logs -l app={root_cause} --tail=100 | grep -E '500|Error'",
+                f"Kiểm tra kết nối mạng nội bộ: kubectl exec deployment/{root_cause} -- wget -qO- http://localhost:8080",
+                f"Khởi động lại frontend pods: kubectl rollout restart deployment/{root_cause} -n default",
+                f"Xác nhận lại trạng thái hoạt động trên trình duyệt: http://172.16.20.26:8888",
+            ]
         else:
             overview = (
                 f"Sự cố {incident_id} ({severity.upper()}) được phát hiện với nguyên nhân gốc tiềm tàng là '{root_cause}' "

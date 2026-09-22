@@ -76,6 +76,48 @@ RUNBOOK_CATALOG = {
             },
         ],
     },
+    "checkout": {
+        "name": "Checkout & Payment Pipeline Runbook",
+        "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/checkout-troubleshooting.md",
+        "steps": [
+            {
+                "action": "Kiểm tra log giao dịch của checkoutservice",
+                "command": "kubectl logs -l app=checkoutservice --tail=100",
+                "reasoning": "Tìm kiếm lỗi liên quan tới thanh toán hoặc gRPC call failure tới phụ thuộc.",
+            },
+            {
+                "action": "Kiểm tra tình trạng paymentservice",
+                "command": "kubectl get pods -l app=paymentservice -n default",
+                "reasoning": "Xác nhận pod thanh toán không bị treo hoặc rò rỉ bộ nhớ.",
+            },
+            {
+                "action": "Kiểm tra các gRPC error rate trên Grafana",
+                "command": "Mở Grafana -> Explore -> Lọc mã lỗi gRPC Status code",
+                "reasoning": "Phân lập dịch vụ con nào trong pipeline checkout gây ra lỗi.",
+            },
+        ],
+    },
+    "frontend": {
+        "name": "Frontend Ingress & HTTP 500 Runbook",
+        "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/frontend-troubleshooting.md",
+        "steps": [
+            {
+                "action": "Xem log lỗi HTTP 500 của frontend",
+                "command": "kubectl logs -l app=frontend --tail=100 | grep -E '500|Error'",
+                "reasoning": "Xác định mã lỗi HTTP và endpoint API bị ảnh hưởng trực tiếp.",
+            },
+            {
+                "action": "Kiểm tra trạng thái kết nối mạng của frontend",
+                "command": "kubectl exec deployment/frontend -- wget -qO- http://localhost:8080",
+                "reasoning": "Xác nhận container frontend có còn phản hồi request cục bộ hay không.",
+            },
+            {
+                "action": "Khởi động lại Pod Frontend (Rolling Restart)",
+                "command": "kubectl rollout restart deployment/frontend -n default",
+                "reasoning": "Xóa sạch các kết nối socket bị treo và giải phóng bộ nhớ đệm frontend.",
+            },
+        ],
+    },
     "default": {
         "name": "Microservices General Incident Runbook",
         "url": "https://github.com/phanhuyhiep/observability-platform/blob/main/docs/runbooks/general-incident.md",
