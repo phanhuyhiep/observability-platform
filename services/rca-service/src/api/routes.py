@@ -63,10 +63,63 @@ def set_dependencies(
     _graph = graph
 
 
-def _get_incident(incident_id: str) -> IncidentDetail:
-    if incident_id not in _incidents_cache:
-        raise HTTPException(status_code=404, detail=f"Incident '{incident_id}' not found")
-    return _incidents_cache[incident_id]
+async def _get_incident(incident_id: str) -> IncidentDetail:
+    if incident_id in _incidents_cache:
+        return _incidents_cache[incident_id]
+
+    # Database fallback if incident was created after service startup
+    if _db_pool:
+        try:
+            async with _db_pool.acquire() as conn:
+                r = await conn.fetchrow("SELECT * FROM incidents WHERE incident_id = $1", incident_id)
+                if r:
+                    imp = r["impacted_entities"]
+                    if isinstance(imp, str):
+                        try:
+                            imp = json.loads(imp)
+                        except Exception:
+                            imp = []
+                    top_ctx = r["topology_context"]
+                    if isinstance(top_ctx, str):
+                        try:
+                            top_ctx = json.loads(top_ctx)
+                        except Exception:
+                            top_ctx = {}
+                    meta = r.get("metadata") if hasattr(r, "get") else r["metadata"]
+                    if isinstance(meta, str):
+                        try:
+                            meta = json.loads(meta)
+                        except Exception:
+                            meta = {}
+
+                    root_cand = None
+                    if isinstance(top_ctx, dict):
+                        root_cand = top_ctx.get("root_entity_candidate")
+                    if not root_cand and isinstance(meta, dict):
+                        root_cand = meta.get("root_candidate")
+
+                    inc = IncidentDetail(
+                        incident_id=r["incident_id"],
+                        title=r["title"],
+                        severity=r["severity"],
+                        status=r["status"],
+                        created_at=r["created_at"],
+                        updated_at=r["updated_at"],
+                        acknowledged_at=r.get("acknowledged_at") if hasattr(r, "get") else None,
+                        investigating_at=r.get("investigating_at") if hasattr(r, "get") else None,
+                        mitigated_at=r.get("mitigated_at") if hasattr(r, "get") else None,
+                        resolved_at=r["resolved_at"],
+                        closed_at=r.get("closed_at") if hasattr(r, "get") else None,
+                        mttr_seconds=r.get("mttr_seconds") if hasattr(r, "get") else None,
+                        impacted_entities=imp or [],
+                        metadata={"root_candidate": root_cand},
+                    )
+                    _incidents_cache[incident_id] = inc
+                    return inc
+        except Exception as e:
+            logger.warning("Failed to query incident %s from DB: %s", incident_id, e)
+
+    raise HTTPException(status_code=404, detail=f"Incident '{incident_id}' not found")
 
 
 # ============================================================
@@ -79,7 +132,7 @@ async def get_root_causes(incident_id: str):
     if _ranker is None:
         raise HTTPException(status_code=503, detail="RCA Engine not initialized")
 
-    incident = _get_incident(incident_id)
+    incident = await _get_incident(incident_id)
 
     # Prepare data for ranker
     entities = incident.impacted_entities
@@ -133,7 +186,7 @@ async def get_blast_radius(incident_id: str):
     if _blast_calc is None:
         raise HTTPException(status_code=503, detail="Blast Radius Calculator not initialized")
 
-    incident = _get_incident(incident_id)
+    incident = await _get_incident(incident_id)
     root = (
         incident.root_causes[0].entity_id
         if incident.root_causes
@@ -159,7 +212,7 @@ async def get_incident_evidence(incident_id: str):
     if _evidence_agg is None:
         raise HTTPException(status_code=503, detail="Evidence Aggregator not initialized")
 
-    incident = _get_incident(incident_id)
+    incident = await _get_incident(incident_id)
     if not incident.evidence:
         # Generate evidence items for impacted entities
         anom_data = [
@@ -187,11 +240,41 @@ async def get_incident_evidence(incident_id: str):
 async def get_incident_timeline(incident_id: str):
     """Get audit timeline of lifecycle transitions, comments, and evidence."""
     events = _timeline_cache.get(incident_id, [])
-    # If empty, create initial creation event
-    if not events and incident_id in _incidents_cache:
-        inc = _incidents_cache[incident_id]
-        events.append(
-            TimelineEvent(
+    if not events and _db_pool:
+        try:
+            async with _db_pool.acquire() as conn:
+                rows = await conn.fetch(
+                    "SELECT * FROM incident_timeline_events WHERE incident_id = $1 ORDER BY timestamp ASC",
+                    incident_id,
+                )
+                for r in rows:
+                    ev_meta = r["metadata"]
+                    if isinstance(ev_meta, str):
+                        try:
+                            ev_meta = json.loads(ev_meta)
+                        except Exception:
+                            ev_meta = {}
+                    events.append(
+                        TimelineEvent(
+                            incident_id=r["incident_id"],
+                            timestamp=r["timestamp"],
+                            event_type=r["event_type"],
+                            actor=r["actor"],
+                            title=r["title"],
+                            description=r["description"] or "",
+                            metadata=ev_meta or {},
+                        )
+                    )
+                if events:
+                    _timeline_cache[incident_id] = events
+        except Exception as e:
+            logger.warning("Failed to fetch timeline for %s from DB: %s", incident_id, e)
+
+    # If still empty, create initial creation event
+    if not events:
+        try:
+            inc = await _get_incident(incident_id)
+            creation_event = TimelineEvent(
                 incident_id=incident_id,
                 timestamp=inc.created_at,
                 event_type="incident_created",
@@ -199,8 +282,10 @@ async def get_incident_timeline(incident_id: str):
                 title="Incident Created",
                 description=f"Incident {incident_id} created with initial status {inc.status}.",
             )
-        )
-        _timeline_cache[incident_id] = events
+            events.append(creation_event)
+            _timeline_cache[incident_id] = events
+        except Exception:
+            pass
 
     return TimelineResponse(
         incident_id=incident_id,
@@ -246,7 +331,7 @@ async def close_incident(incident_id: str, req: TransitionRequest):
 @router.post("/incidents/{incident_id}/comment")
 async def add_incident_comment(incident_id: str, req: CommentRequest):
     """Add an investigation comment to incident timeline."""
-    _get_incident(incident_id)
+    await _get_incident(incident_id)
     event = TimelineEvent(
         incident_id=incident_id,
         timestamp=datetime.now(timezone.utc),
@@ -285,7 +370,7 @@ async def _handle_transition(incident_id: str, target: str, actor: str, comment:
     if _state_machine is None:
         raise HTTPException(status_code=503, detail="State Machine not initialized")
 
-    incident = _get_incident(incident_id)
+    incident = await _get_incident(incident_id)
     try:
         updated_inc, event = _state_machine.transition(incident, target, actor=actor, comment=comment)
         _timeline_cache.setdefault(incident_id, []).append(event)
@@ -351,7 +436,7 @@ async def dispatch_incident_notification(incident_id: str):
     if _notifier is None:
         raise HTTPException(status_code=503, detail="Notification Coordinator not initialized")
 
-    incident = _get_incident(incident_id)
+    incident = await _get_incident(incident_id)
     res = await _notifier.dispatch(incident)
     return res
 

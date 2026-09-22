@@ -505,23 +505,28 @@
                 "value": [
                   {
                     "targetBlank": true,
-                    "title": "Chi tiết phân tích RCA (${__value.raw})",
+                    "title": "AI Copilot – Báo Cáo Sự Cố & 1-Click Resolve",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/summary?format=html"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "AI Copilot – Đề Xuất Điều Tra & SOP Runbooks",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/recommendations?format=html"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "RCA Service – Chi Tiết Nguyên Nhân Gốc (JSON API)",
                     "url": "http://172.16.20.26:30082/api/v1/root-causes/${__value.raw}"
                   },
                   {
                     "targetBlank": true,
-                    "title": "Tempo Distributed Traces",
-                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
-                  },
-                  {
-                    "targetBlank": true,
-                    "title": "SRE Audit Timeline & History",
+                    "title": "SRE Audit – Lịch Sử Timeline Sự Cố (JSON API)",
                     "url": "http://172.16.20.26:30082/api/v1/incidents/${__value.raw}/timeline"
                   },
                   {
                     "targetBlank": true,
-                    "title": "AI Copilot Summary & Recommendations",
-                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/summary"
+                    "title": "Tempo Distributed Traces (Explore)",
+                    "url": "/explore?left=%7B%22datasource%22:%22tempo%22%7D"
                   }
                 ]
               }
@@ -1519,13 +1524,28 @@
                 "value": [
                   {
                     "targetBlank": true,
-                    "title": "Chi tiết phân tích RCA (${__value.raw})",
+                    "title": "AI Copilot – Báo Cáo Sự Cố & 1-Click Resolve",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/summary?format=html"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "AI Copilot – Đề Xuất Điều Tra & SOP Runbooks",
+                    "url": "http://172.16.20.26:30083/api/v1/incidents/${__value.raw}/recommendations?format=html"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "RCA Service – Chi Tiết Nguyên Nhân Gốc (JSON API)",
                     "url": "http://172.16.20.26:30082/api/v1/root-causes/${__value.raw}"
                   },
                   {
                     "targetBlank": true,
-                    "title": "Tempo Distributed Traces",
-                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
+                    "title": "SRE Audit – Lịch Sử Timeline Sự Cố (JSON API)",
+                    "url": "http://172.16.20.26:30082/api/v1/incidents/${__value.raw}/timeline"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "Tempo Distributed Traces (Explore)",
+                    "url": "/explore?left=%7B%22datasource%22:%22tempo%22%7D"
                   }
                 ]
               }
