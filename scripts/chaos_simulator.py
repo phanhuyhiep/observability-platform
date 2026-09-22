@@ -32,6 +32,15 @@ if sys.platform == "win32":
         pass
 
 
+def run_cmd(cmd: list[str]) -> tuple[int, str, str]:
+    """Execute shell command and capture stdout/stderr."""
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True)
+        return p.returncode, p.stdout.strip(), p.stderr.strip()
+    except Exception as e:
+        return 1, "", str(e)
+
+
 def run_cmd_stdin(cmd: list[str], input_text: str) -> tuple[int, str, str]:
     """Execute shell command with stdin input."""
     try:
