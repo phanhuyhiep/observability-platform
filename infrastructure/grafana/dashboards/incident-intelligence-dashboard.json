@@ -462,6 +462,57 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "Incident ID"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "🔍 Chi tiết phân tích RCA (${__value.raw})",
+                    "url": "http://172.16.20.26:30082/api/v1/root-causes/${__value.raw}"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "⚡ Tempo Distributed Traces",
+                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "📜 SRE Audit Timeline & History",
+                    "url": "http://172.16.20.26:30082/api/v1/incidents/${__value.raw}/timeline"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Root Cause Candidate"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "⚡ Tempo Traces (${__value.raw})",
+                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22,%22serviceName%22:%22${__value.raw}%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "📋 Loki Error Logs (${__value.raw})",
+                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22loki%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22%7Bapp%3D~%5C%22.*${__value.raw}.*%5C%22%7D%20%7C~%20%5C%22(?i)error%7Cexception%7Cfail%5C%22%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "MTTR (s)"
             },
             "properties": [
@@ -752,6 +803,29 @@
                 "value": {
                   "type": "color-text"
                 }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Incident ID"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "🔍 Chi tiết phân tích RCA (${__value.raw})",
+                    "url": "http://172.16.20.26:30082/api/v1/root-causes/${__value.raw}"
+                  },
+                  {
+                    "targetBlank": true,
+                    "title": "⚡ Tempo Distributed Traces",
+                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryType%22:%22search%22%7D%5D,%22range%22:%7B%22from%22:%22${__from}%22,%22to%22:%22${__to}%22%7D%7D"
+                  }
+                ]
               }
             ]
           }

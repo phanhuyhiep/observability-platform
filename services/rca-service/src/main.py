@@ -85,8 +85,8 @@ async def incident_watcher_job(ranker: RootCauseRanker, blast_calc: BlastRadiusC
             rows = await conn.fetch(
                 """
                 SELECT * FROM incidents
-                WHERE status = 'OPEN' AND created_at > now() - interval '30 minutes'
-                ORDER BY created_at DESC LIMIT 10
+                WHERE status = 'OPEN'
+                ORDER BY created_at DESC LIMIT 5
                 """
             )
             for r in rows:
@@ -233,14 +233,16 @@ async def lifespan(app: FastAPI):
     # 4. Setup scheduler for incident watcher and auto-resolver
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
-        lambda: incident_watcher_job(ranker, blast_calc, notifier),
+        incident_watcher_job,
         "interval",
+        args=[ranker, blast_calc, notifier],
         seconds=10,
         id="rca_incident_watcher",
     )
     scheduler.add_job(
-        lambda: auto_resolve_job(auto_resolver),
+        auto_resolve_job,
         "interval",
+        args=[auto_resolver],
         seconds=config.rca.evaluation_interval_seconds,
         id="rca_auto_resolver",
     )
